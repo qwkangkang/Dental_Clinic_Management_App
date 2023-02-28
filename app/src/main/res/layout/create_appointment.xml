@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#E7EBF2">
+    <include layout="@layout/title_bar"/>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvCreateAppointment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="#E7EBF2"
+        app:cardCornerRadius="8dp"
+        android:elevation="10dp"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="50dp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_gravity="center_horizontal"
+                android:padding="20dp"
+                >
+                <TextView
+                    android:id="@+id/tvAppDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Appointment Date"
+                    android:textColor="@color/black" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tilAppDate"
+                    app:helperTextTextColor="#FF5722">
+                    <EditText
+                        android:id="@+id/etAppDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:ems="10"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:paddingRight="5dp"
+                        android:paddingLeft="15dp"
+                        android:inputType="none"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:cursorVisible="false"
+                        android:textColor="@color/black"
+                        android:background="@drawable/textbox_background"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvAppTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Appointment Time"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:id="@+id/tilAppTime"
+                    app:helperTextTextColor="#FF5722">
+
+                    <AutoCompleteTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:id="@+id/ddlAppTime"
+                        android:inputType="none"
+                        android:background="@drawable/textbox_background"
+                        android:textSize="16sp"
+                        android:padding="0dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvService"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Service"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:id="@+id/tilService"
+                    app:helperTextTextColor="#FF5722">
+
+                    <AutoCompleteTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:id="@+id/ddlService"
+                        android:inputType="none"
+                        android:background="@drawable/textbox_background"
+                        android:textSize="16sp"
+                        android:padding="0dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvDocInCharge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Doctor In Charge"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:id="@+id/tilDocInCharge"
+                    app:helperTextTextColor="#FF5722">
+
+                    <AutoCompleteTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:id="@+id/ddlDocInCharge"
+                        android:inputType="none"
+                        android:background="@drawable/textbox_background"
+                        android:textSize="16sp"
+                        android:padding="0dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvRoom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Room"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:id="@+id/tilRoom"
+                    app:helperTextTextColor="#FF5722">
+
+                    <AutoCompleteTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:id="@+id/ddlRoom"
+                        android:inputType="none"
+                        android:background="@drawable/textbox_background"
+                        android:textSize="16sp"
+                        android:padding="0dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnCreate"
+                    android:backgroundTint="#7E83AA"
+                    android:text="Make Appointment"
+                    android:layout_marginHorizontal="40dp"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="30dp"/>
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.cardview.widget.CardView>
+    <include android:id="@+id/mnPatient" layout="@layout/menu_bar"/>
+    <include android:id="@+id/mnClinic" layout="@layout/menu_bar_clinic"/>
+</RelativeLayout>

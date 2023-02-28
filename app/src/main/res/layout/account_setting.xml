@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#EEF0F4">
+    <include layout="@layout/title_bar"/>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="#E7EBF2"
+        app:cardCornerRadius="8dp"
+        android:elevation="10dp"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="80dp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_gravity="center_horizontal"
+                android:padding="20dp"
+                >
+                <TextView
+                    android:id="@+id/tvFName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="First Name"
+                    android:textColor="@color/black" />
+                <EditText
+                    android:id="@+id/etFName"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:background="@drawable/textbox_background"
+                    android:padding="5dp"/>
+                <TextView
+                    android:id="@+id/tvLName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Last Name"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+                <EditText
+                    android:id="@+id/etLName"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:background="@drawable/textbox_background"
+                    android:padding="5dp"/>
+                <TextView
+                    android:id="@+id/tvEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Email"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+
+                <EditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:inputType="textEmailAddress"
+                    android:background="@drawable/textbox_background"
+                    android:padding="5dp"/>
+                <TextView
+                    android:id="@+id/tvContact"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Contact No."
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+                <EditText
+                    android:id="@+id/etContact"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:inputType="phone"
+                    android:background="@drawable/textbox_background"
+                    />
+                <TextView
+                    android:id="@+id/tvIC"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="IC No."
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+                <EditText
+                    android:id="@+id/etIC"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:background="@drawable/textbox_background"
+                    android:padding="5dp"/>
+                <TextView
+                    android:id="@+id/tvGender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Gender"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/rgGender"
+                    android:orientation="horizontal">
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Male"
+                        android:id="@+id/radMale"
+                        android:checked="true"
+                        android:paddingHorizontal="15dp"
+                        android:buttonTint="#FE8800"/>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Female"
+                        android:id="@+id/radFemale"
+                        android:checked="false"
+                        android:paddingHorizontal="15dp"
+                        android:buttonTint="#FE8800" />
+                </RadioGroup>
+
+
+
+                <TextView
+                    android:id="@+id/tvAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Address"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"/>
+                <EditText
+                    android:id="@+id/etAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:ems="10"
+                    android:inputType="textMultiLine"
+                    android:gravity="top|start"
+                    android:scrollbars="vertical"
+                    android:lines="5"
+                    android:background="@drawable/textbox_background"
+                    android:padding="5dp"/>
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnResetPw"
+                    android:backgroundTint="#40465F"
+                    android:text="Reset Password"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="10dp"
+                    android:textAllCaps="false"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnUpdate"
+                    android:backgroundTint="#7E83AA"
+                    android:text="Update"
+                    android:layout_marginHorizontal="20dp"
+                    android:textAllCaps="false"/>
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnCancel"
+                    android:backgroundTint="#CACBCD"
+                    android:text="Cancel"
+                    android:layout_marginHorizontal="20dp"
+                    android:textColor="@color/black"
+                    android:textAllCaps="false"/>
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.cardview.widget.CardView>
+    <include layout="@layout/menu_bar"/>
+    <include layout="@layout/menu_bar_clinic"/>
+
+</RelativeLayout>
