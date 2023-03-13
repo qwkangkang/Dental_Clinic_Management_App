@@ -187,15 +187,15 @@
                 android:layout_marginHorizontal="30dp"
                 android:layout_marginTop="10dp"
                 android:textAllCaps="false"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnCheckIn"
-                android:backgroundTint="#7E83AA"
-                android:text="Check In"
-                android:layout_marginHorizontal="30dp"
-                android:layout_marginTop="10dp"
-                android:textAllCaps="false"/>
+<!--            <Button-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:id="@+id/btnCheckIn"-->
+<!--                android:backgroundTint="#7E83AA"-->
+<!--                android:text="Check In"-->
+<!--                android:layout_marginHorizontal="30dp"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:textAllCaps="false"/>-->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
     <include layout="@layout/menu_bar_clinic"/>

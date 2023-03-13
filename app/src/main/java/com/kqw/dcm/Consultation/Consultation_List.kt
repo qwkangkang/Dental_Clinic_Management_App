@@ -14,6 +14,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kqw.dcm.*
 import com.kqw.dcm.AccountSetting.Account_Setting
+import com.kqw.dcm.AccountSetting.Account_Setting_Clinic
 import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Appointment.Appointment_List
 import com.kqw.dcm.FAQ.FAQListAdapter
@@ -24,6 +25,7 @@ import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule
+import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.consultation_list.*
 import kotlinx.android.synthetic.main.consultation_list.ibAdd
 import kotlinx.android.synthetic.main.faq_list.*
@@ -53,7 +55,7 @@ class Consultation_List: AppCompatActivity () {
         ibConsult.setImageResource(R.drawable.consult_orange)
         ibConsultC.setImageResource(R.drawable.consult_orange)
         tvTitle.text = "Consultation"
-        btnBack.visibility = View.INVISIBLE
+
 
         //variables
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
@@ -151,9 +153,16 @@ class Consultation_List: AppCompatActivity () {
         }
 
         btnLogout.setOnClickListener {
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
+        }
+
+        btnBack.setOnClickListener {
+            finish()
         }
 
         //menu bar button
@@ -177,7 +186,7 @@ class Consultation_List: AppCompatActivity () {
                         overridePendingTransition(0, 0)
                     }
                     R.id.iSche -> {
-                        val intent = Intent(this, Schedule::class.java)
+                        val intent = Intent(this, Schedule_List::class.java)
                         startActivity(intent)
                         overridePendingTransition(0, 0)
                     }
@@ -220,7 +229,7 @@ class Consultation_List: AppCompatActivity () {
         }
 
         ibProfileC.setOnClickListener {
-            val intent = Intent(this, Account_Setting::class.java)
+            val intent = Intent(this, Account_Setting_Clinic::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
         }

@@ -70,6 +70,6 @@
         </ScrollView>
 
     </androidx.cardview.widget.CardView>
-    <include layout="@layout/menu_bar"/>
-    <include layout="@layout/menu_bar_clinic"/>
+    <include android:id="@+id/mnPatientOTP" layout="@layout/menu_bar"/>
+    <include android:id="@+id/mnClinicOTP" layout="@layout/menu_bar_clinic"/>
 </RelativeLayout>

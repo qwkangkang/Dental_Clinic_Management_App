@@ -17,7 +17,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="20dp"
-        android:text="Hello, Andrew"
+        android:text="Hello, "
         android:textColor="#000000"
         android:textSize="25sp"
         android:textStyle="normal" />
@@ -70,7 +70,7 @@
                 android:id="@+id/tvQueueNo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="10"
+                android:text="0"
                 android:layout_marginTop="20dp"
                 android:textSize="45sp"
                 android:layout_gravity="center_horizontal"

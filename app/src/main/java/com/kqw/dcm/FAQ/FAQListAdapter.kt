@@ -1,6 +1,8 @@
 package com.kqw.dcm.FAQ
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,25 +21,35 @@ class FAQListAdapter(private val faqList: ArrayList<FAQ_Data>): RecyclerView.Ada
     companion object{
         val TAG:String = FAQListAdapter::class.java.simpleName
     }
+
+    lateinit var sharedPreferences: SharedPreferences
+    var PREFS_KEY = "prefs"
+    var USERID_KEY = "uid"
+    var ROLE_KEY = "role"
+    var sp_uid = ""
+    var sp_role = ""
+
     inner class FAQViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val etQues: EditText = itemView.findViewById(R.id.etQues)
         val etAns: EditText = itemView.findViewById(R.id.etAns)
         val ibQuesArrow: ImageButton = itemView.findViewById(R.id.ibQuesArrow)
-//        val ibAnsArrow: ImageButton = itemView.findViewById(R.id.ibAnsArrow)
         val cvQues:CardView = itemView.findViewById(R.id.cvQues)
         val cvAns:CardView = itemView.findViewById(R.id.cvAns)
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FAQListAdapter.FAQViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.faq_list_item, parent, false)
+        sharedPreferences = itemView.context.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
+        sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
+        sp_role = sharedPreferences.getString(ROLE_KEY, null)!!
         return FAQViewHolder(itemView)
     }
     override fun onBindViewHolder(holder: FAQListAdapter.FAQViewHolder, position: Int) {
+
         holder.etQues.setText(faqList[position].faqQues)
         holder.etAns.setText(faqList[position].faqAns)
         holder.cvAns.visibility = View.GONE
 
-        holder.itemView.ibQuesArrow.setOnClickListener {
-            Log.d(TAG, "clicked")
+        holder.itemView.ibQuesArrow.setOnClickListener { Log.d(TAG, "clicked")
             if(holder.itemView.cvAns.visibility==View.GONE) {
                 Log.d(TAG, "gone")
                 holder.itemView.cvAns.visibility = View.VISIBLE
@@ -51,23 +63,23 @@ class FAQListAdapter(private val faqList: ArrayList<FAQ_Data>): RecyclerView.Ada
         }
 
         holder.itemView.etQues.setOnClickListener {
-            Log.d(TAG, "ques clicked")
-            val msgFAQID : String = faqList[position].faqID
-            val msgEdit : String = "Edit"
-            val intent = Intent(holder.itemView.context, Create_FAQ::class.java)
-            intent.putExtra("faqID_message", msgFAQID)
-            intent.putExtra("edit_message", msgEdit)
-            holder.itemView.context.startActivity(intent)
+            if(sp_role=="Doctor"){
+                val msgFAQID : String = faqList[position].faqID
+                val msgEdit : String = "Edit"
+                val intent = Intent(holder.itemView.context, Create_FAQ::class.java)
+                intent.putExtra("faqID_message", msgFAQID)
+                intent.putExtra("edit_message", msgEdit)
+                holder.itemView.context.startActivity(intent)
+            }
         }
-        holder.itemView.setOnClickListener {
-            Log.d(TAG, "ques cv clicked")
-            val msgFAQID : String = faqList[position].faqID
-            val msgEdit : String = "Edit"
-            val intent = Intent(holder.itemView.context, Create_FAQ::class.java)
-            intent.putExtra("faqID_message", msgFAQID)
-            intent.putExtra("edit_message", msgEdit)
-            holder.itemView.context.startActivity(intent)
-        }
+//        holder.itemView.setOnClickListener {
+//            val msgFAQID : String = faqList[position].faqID
+//            val msgEdit : String = "Edit"
+//            val intent = Intent(holder.itemView.context, Create_FAQ::class.java)
+//            intent.putExtra("faqID_message", msgFAQID)
+//            intent.putExtra("edit_message", msgEdit)
+//            holder.itemView.context.startActivity(intent)
+//        }
     }
     override fun getItemCount(): Int {
         return faqList.size

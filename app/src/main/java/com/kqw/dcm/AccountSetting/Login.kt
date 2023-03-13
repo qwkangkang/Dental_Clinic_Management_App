@@ -10,6 +10,12 @@ import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.AuthFailureError
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -21,6 +27,7 @@ import kotlinx.android.synthetic.main.login.*
 import kotlinx.android.synthetic.main.login.etEmail
 import kotlinx.android.synthetic.main.login.etPassword
 import kotlinx.android.synthetic.main.register.*
+import java.util.*
 
 //import kotlinx.android.synthetic.main.login.*
 
@@ -139,6 +146,58 @@ class Login : AppCompatActivity() {
             val intent = Intent(this, Register::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
+        }
+
+        tvForgotPassword.setOnClickListener {
+            Log.d(TAG, "clicked")
+            val email = etEmail.text.toString()
+            if(email==""){
+                Toast.makeText(this, "Please Enter Your Registered Email First", Toast.LENGTH_SHORT).show()
+            }else{
+                Log.d(TAG, "email is=>"+email)
+                var code:Int
+                var random: Random = Random()
+                code = random.nextInt(8999)+1000
+                var requestQueue : RequestQueue = Volley.newRequestQueue(applicationContext)
+
+                var stringRequest: StringRequest =  object: StringRequest(
+                    Method.POST, "https://infinityqw.000webhostapp.com/sendEmail.php",
+                    Response.Listener{ response->
+                        Toast.makeText(this, ""+response, Toast.LENGTH_SHORT).show()
+                        Log.d(Reset_Pw.TAG, response)
+                    },
+                    Response.ErrorListener{ error ->
+                        Toast.makeText(this, ""+error, Toast.LENGTH_SHORT).show()
+                        Log.d(Reset_Pw.TAG, error.toString())
+                    })
+                {
+                    override fun getParams(): Map<String, String> {
+                        val params: MutableMap<String, String> = HashMap()
+                        params["email"] = email
+                        params["code"] = code.toString()
+                        return params
+                    }
+                    @Throws(AuthFailureError::class)
+                    override fun getHeaders(): Map<String, String> {
+                        val params: MutableMap<String, String> = HashMap()
+                        params["Content-Type"] = "application/x-www-form-urlencoded"
+                        return params
+                    }
+                }
+                stringRequest.retryPolicy = DefaultRetryPolicy(
+                    10000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+                )
+
+                requestQueue.add(stringRequest)
+
+
+                val intent = Intent(this, Email_Verification::class.java)
+                intent.putExtra("msgOTP", code.toString())
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+            }
         }
 
     }

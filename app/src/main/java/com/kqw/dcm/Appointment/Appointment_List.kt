@@ -7,7 +7,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
+import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -24,6 +26,7 @@ import com.kqw.dcm.Patient.Patient_Data
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule
+import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.appointment_list.*
 import kotlinx.android.synthetic.main.appointment_list.mnClinic
 import kotlinx.android.synthetic.main.appointment_list.mnPatient
@@ -32,6 +35,7 @@ import kotlinx.android.synthetic.main.menu_bar_clinic.*
 import kotlinx.android.synthetic.main.patient_list.*
 import kotlinx.android.synthetic.main.schedule.*
 import kotlinx.android.synthetic.main.title_bar.*
+import kotlinx.android.synthetic.main.treatment_history_list.*
 
 class Appointment_List: AppCompatActivity() {
     companion object {
@@ -53,14 +57,17 @@ class Appointment_List: AppCompatActivity() {
 
         //init setting
         ibApp.setImageResource(R.drawable.appointment_orange)
+        ibHomeC.setImageResource(R.drawable.home_orange)
         tvTitle.text = "Appointment"
-        btnBack.visibility = View.INVISIBLE
+        //btnBack.visibility = View.INVISIBLE
 
 
         //variables
         var patientID:String?=null
         var userID:String?=null
         var patientName:String?=null
+        var pPatientID:String?=null
+
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
         sp_role = sharedPreferences.getString(ROLE_KEY, null)!!
@@ -79,114 +86,441 @@ class Appointment_List: AppCompatActivity() {
             patientID = bundle.getString("msgPatientID")
         }
 
+
+
         db = FirebaseFirestore.getInstance()
 
-        val refPatient = db.collection("Patient").document(patientID.toString())
-        refPatient.get().addOnSuccessListener {
-            if (it != null) {
-                userID = it.data?.get("user_ID").toString()
+        if (sp_role=="Doctor"||sp_role=="Assistant"){
 
-                val refUser = db.collection("User").document(userID.toString())
-                refUser.get().addOnSuccessListener {
+            if(patientID!=null){
+                val refPatient = db.collection("Patient").document(patientID.toString())
+                refPatient.get().addOnSuccessListener {
                     if (it != null) {
-                        patientName = it.data?.get("user_first_name")
-                            .toString() + " " + it.data?.get("user_last_name").toString()
-                        tvPatientName.text = patientName
+                        userID = it.data?.get("user_ID").toString()
+
+                        val refUser = db.collection("User").document(userID.toString())
+                        refUser.get().addOnSuccessListener {
+                            if (it != null) {
+                                patientName = it.data?.get("user_first_name")
+                                    .toString() + " " + it.data?.get("user_last_name").toString()
+                                tvPatientName.text = patientName
+                            }
+                        }
+                            .addOnFailureListener {
+                                Log.d(Appointment_List.TAG, "retrieve user failed")
+                            }
                     }
+                }.addOnFailureListener {
+                    Log.d(Appointment_List.TAG, "retrieve patient failed")
                 }
-                    .addOnFailureListener {
-                        Log.d(Appointment_List.TAG, "retrieve user failed")
-                    }
+            }else{
+                tvPatientName.text = ""
+                btnAddAppointment.visibility = View.GONE
+//                cvAppList.setLayoutParams(RelativeLayout.LayoutParams(CardView., 500));
             }
-        }.addOnFailureListener {
-            Log.d(Appointment_List.TAG, "retrieve patient failed")
         }
+        else{
+            tvPatientName.text = ""
+        }
+
 
         rvAppointment.layoutManager = LinearLayoutManager(this)
         appList = arrayListOf()
 
         db = FirebaseFirestore.getInstance()
 
-        db.collection("Appointment").get()
-            .addOnSuccessListener {
-                if (!it.isEmpty) {
-                    for (appointment in it.documents) {
-                        val aPatientID = appointment.get("patient_ID").toString()
-                        if(aPatientID==patientID){
+        //from patient list
+        if(patientID!=null){
+            if(sp_role=="Doctor"||sp_role=="Assistant"){
+                db.collection("Appointment").get()
+                    .addOnSuccessListener {
+                        if (!it.isEmpty) {
+                            for (appointment in it.documents) {
+                                val aPatientID = appointment.get("patient_ID").toString()
+                                if(aPatientID==patientID){
 
-                            val appID = appointment.get("appointment_ID").toString()
+                                    val appID = appointment.get("appointment_ID").toString()
 
-                            val service = appointment.get("appointment_service").toString()
-                            val appDate = appointment.get("appointment_date").toString()
-                            val appStartTime = appointment.get("appointment_start_time").toString()
-                            val status = appointment.get("appointment_status").toString()
-                            val scheduleID = appointment.get("schedule_ID").toString()
-                            Log.d(Appointment_List.TAG, "schedule id =>"+scheduleID)
-                            val refSchedule = db.collection("Schedule").document(scheduleID)
-                            refSchedule.get().addOnSuccessListener {
-                                if (it != null) {
-                                    val doctorID = it.data?.get("doctor_ID").toString()
-
-                                    Log.d(Appointment_List.TAG, "doc id =>"+doctorID)
-                                    val refDoc = db.collection("Doctor").document(doctorID)
-                                    refDoc.get().addOnSuccessListener {
+                                    val service = appointment.get("appointment_service").toString()
+                                    val appDate = appointment.get("appointment_date").toString()
+                                    val appStartTime = appointment.get("appointment_start_time").toString()
+                                    val status = appointment.get("appointment_status").toString()
+                                    val room = appointment.get("room_ID").toString()
+                                    val scheduleID = appointment.get("schedule_ID").toString()
+                                    val cancelReason = appointment.get("appointment_cancel_reason").toString()
+                                    Log.d(Appointment_List.TAG, "schedule id =>"+scheduleID)
+                                    val refSchedule = db.collection("Schedule").document(scheduleID)
+                                    refSchedule.get().addOnSuccessListener {
                                         if (it != null) {
-                                            userID = it.data?.get("user_ID").toString()
-                                            Log.d(Appointment_List.TAG, "user id =>"+userID)
-                                            val refUser = db.collection("User").document(userID!!)
-                                            refUser.get().addOnSuccessListener {
+                                            val doctorID = it.data?.get("doctor_ID").toString()
+
+                                            Log.d(Appointment_List.TAG, "doc id =>"+doctorID)
+                                            val refDoc = db.collection("Doctor").document(doctorID)
+                                            refDoc.get().addOnSuccessListener {
                                                 if (it != null) {
-                                                    val doctorName = it.data?.get("user_first_name").toString()+" "+it.data?.get("user_last_name").toString()
-                                                    Log.d(Appointment_List.TAG, "doc name =>"+doctorName)
-                                                    val app = Appointment_Data(appID, aPatientID, doctorName, service, appDate, appStartTime, status)
+                                                    userID = it.data?.get("user_ID").toString()
+                                                    Log.d(Appointment_List.TAG, "user id =>"+userID)
+                                                    val refUser = db.collection("User").document(userID!!)
+                                                    refUser.get().addOnSuccessListener {
+                                                        if (it != null) {
+                                                            val doctorName = it.data?.get("user_first_name").toString()+" "+it.data?.get("user_last_name").toString()
+                                                            Log.d(Appointment_List.TAG, "doc name =>"+doctorName)
+                                                            val app = Appointment_Data(appID, aPatientID, doctorName, service, appDate, appStartTime, status, room, cancelReason)
 
-                                                    if(app!=null){
-                                                        appList.add(app)
+                                                            if(app!=null){
+                                                                appList.add(app)
+                                                            }
+                                                            rvAppointment.adapter = AppointmentListAdapter(appList)
+
+                                                        }
                                                     }
-                                                    rvAppointment.adapter = AppointmentListAdapter(appList)
-
+                                                        .addOnFailureListener {
+                                                            Log.d(Appointment_List.TAG, "retrieve user failed")
+                                                        }
                                                 }
                                             }
                                                 .addOnFailureListener {
-                                                    Log.d(Appointment_List.TAG, "retrieve user failed")
+                                                    Log.d(Appointment_List.TAG, "retrieve doctor failed")
                                                 }
                                         }
                                     }
                                         .addOnFailureListener {
-                                            Log.d(Appointment_List.TAG, "retrieve doctor failed")
+                                            Log.d(Appointment_List.TAG, "retrieve schedule failed")
                                         }
                                 }
                             }
-                                .addOnFailureListener {
+                        }
+                    }
+                    .addOnFailureListener {
+                        Log.d(Appointment_List.TAG, "retrieve appointment failed")
+                    }
+            }else {
+                db.collection("Patient").get()
+                    .addOnSuccessListener {
+                        if (!it.isEmpty) {
+                            for (patient in it.documents) {
+                                val pUserID = patient.get("user_ID").toString()
+                                if (pUserID == sp_uid) {
+                                    pPatientID = patient.get("patient_ID").toString()
+                                    db.collection("Appointment").get()
+                                        .addOnSuccessListener {
+                                            if (!it.isEmpty) {
+                                                for (appointment in it.documents) {
+                                                    val aPatientID =
+                                                        appointment.get("patient_ID").toString()
+                                                    if (aPatientID == pPatientID) {
+
+                                                        val appID =
+                                                            appointment.get("appointment_ID").toString()
+                                                        val service =
+                                                            appointment.get("appointment_service")
+                                                                .toString()
+                                                        val appDate =
+                                                            appointment.get("appointment_date")
+                                                                .toString()
+                                                        val appStartTime =
+                                                            appointment.get("appointment_start_time")
+                                                                .toString()
+                                                        val status =
+                                                            appointment.get("appointment_status")
+                                                                .toString()
+                                                        val room =
+                                                            appointment.get("room_ID")
+                                                                .toString()
+                                                        val scheduleID =
+                                                            appointment.get("schedule_ID").toString()
+                                                        val cancelReason = appointment.get("appointment_cancel_reason").toString()
+                                                        val refSchedule = db.collection("Schedule")
+                                                            .document(scheduleID)
+                                                        refSchedule.get().addOnSuccessListener {
+                                                            if (it != null) {
+                                                                val doctorID =
+                                                                    it.data?.get("doctor_ID").toString()
+                                                                val refDoc = db.collection("Doctor")
+                                                                    .document(doctorID)
+                                                                refDoc.get().addOnSuccessListener {
+                                                                    if (it != null) {
+                                                                        userID = it.data?.get("user_ID")
+                                                                            .toString()
+                                                                        Log.d(
+                                                                            Appointment_List.TAG,
+                                                                            "user id =>" + userID
+                                                                        )
+                                                                        val refUser =
+                                                                            db.collection("User")
+                                                                                .document(userID!!)
+                                                                        refUser.get()
+                                                                            .addOnSuccessListener {
+                                                                                if (it != null) {
+                                                                                    val doctorName =
+                                                                                        it.data?.get("user_first_name")
+                                                                                            .toString() + " " + it.data?.get(
+                                                                                            "user_last_name"
+                                                                                        ).toString()
+                                                                                    val app =
+                                                                                        Appointment_Data(
+                                                                                            appID,
+                                                                                            aPatientID,
+                                                                                            doctorName,
+                                                                                            service,
+                                                                                            appDate,
+                                                                                            appStartTime,
+                                                                                            status,
+                                                                                            room,
+                                                                                            cancelReason
+                                                                                        )
+                                                                                    if (app != null) {
+                                                                                        appList.add(app)
+                                                                                    }
+                                                                                    rvAppointment.adapter =
+                                                                                        AppointmentListAdapter(
+                                                                                            appList
+                                                                                        )
+                                                                                }
+                                                                            }
+                                                                            .addOnFailureListener {
+                                                                                Log.d(
+                                                                                    Appointment_List.TAG,
+                                                                                    "retrieve user failed"
+                                                                                )
+                                                                            }
+                                                                    }
+                                                                }
+                                                                    .addOnFailureListener {
+                                                                        Log.d(
+                                                                            Appointment_List.TAG,
+                                                                            "retrieve doctor failed"
+                                                                        )
+                                                                    }
+                                                            }
+                                                        }
+                                                            .addOnFailureListener {
+                                                                Log.d(
+                                                                    Appointment_List.TAG,
+                                                                    "retrieve schedule failed"
+                                                                )
+                                                            }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .addOnFailureListener {
+                                            Log.d(Appointment_List.TAG, "retrieve appointment failed")
+                                        }
 
                                 }
+                            }
+                        }
+                    }.addOnFailureListener { Log.d(TAG, "failed retrieve user") }
+            }
+        }
+        else{
+            if(sp_role=="Doctor"||sp_role=="Assistant"){
+                db.collection("Appointment").get()
+                    .addOnSuccessListener {
+                        if (!it.isEmpty) {
+                            for (appointment in it.documents) {
+                                val aPatientID = appointment.get("patient_ID").toString()
+                                    val appID = appointment.get("appointment_ID").toString()
 
+                                    val service = appointment.get("appointment_service").toString()
+                                    val appDate = appointment.get("appointment_date").toString()
+                                    val appStartTime = appointment.get("appointment_start_time").toString()
+                                    val status = appointment.get("appointment_status").toString()
+                                    val room = appointment.get("room_ID").toString()
+                                    val scheduleID = appointment.get("schedule_ID").toString()
+                                    val cancelReason = appointment.get("appointment_cancel_reason").toString()
+                                    Log.d(Appointment_List.TAG, "schedule id =>"+scheduleID)
+                                    val refSchedule = db.collection("Schedule").document(scheduleID)
+                                    refSchedule.get().addOnSuccessListener {
+                                        if (it != null) {
+                                            val doctorID = it.data?.get("doctor_ID").toString()
+
+                                            Log.d(Appointment_List.TAG, "doc id =>"+doctorID)
+                                            val refDoc = db.collection("Doctor").document(doctorID)
+                                            refDoc.get().addOnSuccessListener {
+                                                if (it != null) {
+                                                    userID = it.data?.get("user_ID").toString()
+                                                    Log.d(Appointment_List.TAG, "user id =>"+userID)
+                                                    val refUser = db.collection("User").document(userID!!)
+                                                    refUser.get().addOnSuccessListener {
+                                                        if (it != null) {
+                                                            val doctorName = it.data?.get("user_first_name").toString()+" "+it.data?.get("user_last_name").toString()
+                                                            Log.d(Appointment_List.TAG, "doc name =>"+doctorName)
+                                                            val app = Appointment_Data(appID, aPatientID, doctorName, service, appDate, appStartTime, status, room, cancelReason)
+
+                                                            if(app!=null){
+                                                                appList.add(app)
+                                                            }
+                                                            rvAppointment.adapter = AppointmentListAdapter(appList)
+
+                                                        }
+                                                    }
+                                                        .addOnFailureListener {
+                                                            Log.d(Appointment_List.TAG, "retrieve user failed")
+                                                        }
+                                                }
+                                            }
+                                                .addOnFailureListener {
+                                                    Log.d(Appointment_List.TAG, "retrieve doctor failed")
+                                                }
+                                        }
+                                    }
+                                        .addOnFailureListener {
+                                            Log.d(Appointment_List.TAG, "retrieve schedule failed")
+                                        }
+                                }
 
                         }
-
-
                     }
-                }
+                    .addOnFailureListener {
+                        Log.d(Appointment_List.TAG, "retrieve appointment failed")
+                    }
+            }else {
+                db.collection("Patient").get()
+                    .addOnSuccessListener {
+                        if (!it.isEmpty) {
+                            for (patient in it.documents) {
+                                val pUserID = patient.get("user_ID").toString()
+                                if (pUserID == sp_uid) {
+                                    pPatientID = patient.get("patient_ID").toString()
+                                    db.collection("Appointment").get()
+                                        .addOnSuccessListener {
+                                            if (!it.isEmpty) {
+                                                for (appointment in it.documents) {
+                                                    val aPatientID =
+                                                        appointment.get("patient_ID").toString()
+                                                    if (aPatientID == pPatientID) {
+
+                                                        val appID =
+                                                            appointment.get("appointment_ID").toString()
+                                                        val service =
+                                                            appointment.get("appointment_service")
+                                                                .toString()
+                                                        val appDate =
+                                                            appointment.get("appointment_date")
+                                                                .toString()
+                                                        val appStartTime =
+                                                            appointment.get("appointment_start_time")
+                                                                .toString()
+                                                        val status =
+                                                            appointment.get("appointment_status")
+                                                                .toString()
+                                                        val room =
+                                                            appointment.get("room_ID")
+                                                                .toString()
+                                                        val scheduleID =
+                                                            appointment.get("schedule_ID").toString()
+                                                        val cancelReason = appointment.get("appointment_cancel_reason").toString()
+                                                        val refSchedule = db.collection("Schedule")
+                                                            .document(scheduleID)
+                                                        refSchedule.get().addOnSuccessListener {
+                                                            if (it != null) {
+                                                                val doctorID =
+                                                                    it.data?.get("doctor_ID").toString()
+                                                                val refDoc = db.collection("Doctor")
+                                                                    .document(doctorID)
+                                                                refDoc.get().addOnSuccessListener {
+                                                                    if (it != null) {
+                                                                        userID = it.data?.get("user_ID")
+                                                                            .toString()
+                                                                        Log.d(
+                                                                            Appointment_List.TAG,
+                                                                            "user id =>" + userID
+                                                                        )
+                                                                        val refUser =
+                                                                            db.collection("User")
+                                                                                .document(userID!!)
+                                                                        refUser.get()
+                                                                            .addOnSuccessListener {
+                                                                                if (it != null) {
+                                                                                    val doctorName =
+                                                                                        it.data?.get("user_first_name")
+                                                                                            .toString() + " " + it.data?.get(
+                                                                                            "user_last_name"
+                                                                                        ).toString()
+                                                                                    val app =
+                                                                                        Appointment_Data(
+                                                                                            appID,
+                                                                                            aPatientID,
+                                                                                            doctorName,
+                                                                                            service,
+                                                                                            appDate,
+                                                                                            appStartTime,
+                                                                                            status,
+                                                                                            room,
+                                                                                            cancelReason
+                                                                                        )
+                                                                                    if (app != null) {
+                                                                                        appList.add(app)
+                                                                                    }
+                                                                                    rvAppointment.adapter =
+                                                                                        AppointmentListAdapter(
+                                                                                            appList
+                                                                                        )
+                                                                                }
+                                                                            }
+                                                                            .addOnFailureListener {
+                                                                                Log.d(
+                                                                                    Appointment_List.TAG,
+                                                                                    "retrieve user failed"
+                                                                                )
+                                                                            }
+                                                                    }
+                                                                }
+                                                                    .addOnFailureListener {
+                                                                        Log.d(
+                                                                            Appointment_List.TAG,
+                                                                            "retrieve doctor failed"
+                                                                        )
+                                                                    }
+                                                            }
+                                                        }
+                                                            .addOnFailureListener {
+                                                                Log.d(
+                                                                    Appointment_List.TAG,
+                                                                    "retrieve schedule failed"
+                                                                )
+                                                            }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .addOnFailureListener {
+                                            Log.d(Appointment_List.TAG, "retrieve appointment failed")
+                                        }
+
+                                }
+                            }
+                        }
+                    }.addOnFailureListener { Log.d(TAG, "failed retrieve user") }
             }
-            .addOnFailureListener {
-                Log.d(Appointment_List.TAG, "retrieve appointment failed")
-            }
+        }
 
 
         btnAddAppointment.setOnClickListener {
-//            val intent = Intent(this, View_Appointment::class.java)
-//            startActivity(intent)
-//            val intent = Intent(this, Create_Appointment::class.java)
-//            startActivity(intent)
+
             val intent = Intent(this, Create_Appointment::class.java)
-            intent.putExtra("msgPatientID", patientID)
+            if(sp_role=="Doctor"||sp_role=="Assistant"){
+                intent.putExtra("msgPatientID", patientID)
+            }else{
+                intent.putExtra("msgPatientID", pPatientID)
+            }
             startActivity(intent)
+            overridePendingTransition(0, 0)
         }
 
         btnLogout.setOnClickListener {
+            val editor:SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
+        }
+
+        btnBack.setOnClickListener {
+            finish()
         }
 
         //menu bar button
@@ -210,7 +544,7 @@ class Appointment_List: AppCompatActivity() {
                         overridePendingTransition(0, 0)
                     }
                     R.id.iSche -> {
-                        val intent = Intent(this, Schedule::class.java)
+                        val intent = Intent(this, Schedule_List::class.java)
                         startActivity(intent)
                         overridePendingTransition(0, 0)
                     }

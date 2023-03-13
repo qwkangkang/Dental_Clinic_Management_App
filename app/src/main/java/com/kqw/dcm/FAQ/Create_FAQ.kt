@@ -40,6 +40,7 @@ class Create_FAQ:AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.create_faq)
+        ibHomeC.setImageResource(R.drawable.home_orange)
 
         //init setting
         tvTitle.text = "FAQ"
@@ -74,6 +75,9 @@ class Create_FAQ:AppCompatActivity() {
         }
 
         btnLogout.setOnClickListener {
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)

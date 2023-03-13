@@ -47,7 +47,6 @@ class Register : AppCompatActivity() {
 
 
         btnSignUp.setOnClickListener {
-
             fname=etFName.text.toString().trim()
             lname=etLName.text.toString().trim()
             email=etEmail.text.toString().trim()
@@ -75,59 +74,67 @@ class Register : AppCompatActivity() {
             if(tilFName.helperText==null && tilLName.helperText==null && tilEmail.helperText==null &&
                 tilContact.helperText==null && tilIC.helperText==null && tilPassword.helperText==null &&
                 tilCPassword.helperText==null && tilAddress.helperText==null) {
-                Toast.makeText(this, "validation pass", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this, "validation pass", Toast.LENGTH_SHORT).show()
 
 //                val userID = FirebaseAuth.getInstance().currentUser!!.uid
-                val id = db.collection("collection_name").document().id
+                var emailFound:Boolean=false
+                val email = etEmail.text.toString().trim()
+                db.collection("User").get()
+                    .addOnSuccessListener{
+                        if (!it.isEmpty) {
+                            for (user in it.documents) {
+                                var sEmail: String = user.data?.get("user_email").toString()
+                                if (sEmail == email) {
+                                    Log.d(TAG, "found the same")
+                                    emailFound = true
+                                }
+                            }
+                            if(emailFound){
+                                Toast.makeText(this, "This Email Has Been Registered", Toast.LENGTH_SHORT).show()
+                            }
+                            else{
+                                val id = db.collection("collection_name").document().id
 
-                val userMap = hashMapOf(
-                    "user_ID" to id,
-                    "user_first_name" to fname,
-                    "user_last_name" to lname,
-                    "user_email" to email,
-                    "user_role" to role,
-                    "user_password" to password,
-                    "user_phone" to contactNo,
-                    "user_IC_no" to IC,
-                    "user_gender" to gender
-                )
+                                val userMap = hashMapOf(
+                                    "user_ID" to id,
+                                    "user_first_name" to fname,
+                                    "user_last_name" to lname,
+                                    "user_email" to email,
+                                    "user_role" to role,
+                                    "user_password" to password,
+                                    "user_phone" to contactNo,
+                                    "user_IC_no" to IC,
+                                    "user_gender" to gender
+                                )
 
-                db.collection("User").document(id)
-                    .set(userMap)
-                    .addOnSuccessListener { Log.d(TAG, "Success") }
-                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
+                                db.collection("User").document(id)
+                                    .set(userMap)
+                                    .addOnSuccessListener { Log.d(TAG, "Success") }
+                                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
 
-                val patientID = db.collection("collection_name1").document().id
+                                val patientID = db.collection("collection_name1").document().id
 
-                val patientMap = hashMapOf(
-                    "patient_ID" to patientID,
-                    "patient_address" to address,
-                    "user_ID" to id
-                )
+                                val patientMap = hashMapOf(
+                                    "patient_ID" to patientID,
+                                    "patient_address" to address,
+                                    "user_ID" to id
+                                )
 
-                db.collection("Patient").document(patientID)
-                    .set(patientMap)
-                    .addOnSuccessListener { Log.d(TAG, "Success") }
-                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
-
-                finish()
+                                db.collection("Patient").document(patientID)
+                                    .set(patientMap)
+                                    .addOnSuccessListener { Log.d(TAG, "Success") }
+                                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
+                                Log.d(TAG, "Register Successful. Please Login First")
+                                finish()
+                            }
+                        }
+                    }
             }
-
-
-//            }else{
-//                Toast.makeText(this, "something wrong", Toast.LENGTH_SHORT).show()
-//            }
-
-//            val intent = Intent(this, MainActivity::class.java)
-//            startActivity(intent)
-//            overridePendingTransition(0, 0)
         }
 
         btnCancel.setOnClickListener{
-//            val intent = Intent(this, Login::class.java)
-//            startActivity(intent)
-//            overridePendingTransition(0, 0)
             finish()
+            overridePendingTransition(0, 0)
         }
 
         tvSignUpAsDoc.setOnClickListener{
@@ -186,6 +193,7 @@ class Register : AppCompatActivity() {
         }
         return null
     }
+
 
     private fun validContactNo():String?{
         val contactNo = etContact.text.toString().trim()

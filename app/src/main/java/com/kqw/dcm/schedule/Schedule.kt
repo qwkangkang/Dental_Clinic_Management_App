@@ -156,7 +156,7 @@ class Schedule: AppCompatActivity() {
                         overridePendingTransition(0, 0)
                     }
                     R.id.iSche -> {
-                        val intent = Intent(this, Schedule::class.java)
+                        val intent = Intent(this, Schedule_List::class.java)
                         startActivity(intent)
                         overridePendingTransition(0, 0)
                     }
@@ -164,22 +164,21 @@ class Schedule: AppCompatActivity() {
                 true
             }
 
-            ibConsult.setOnClickListener {
-                val intent = Intent(this, Consultation_List::class.java)
-                startActivity(intent)
-                overridePendingTransition(0, 0)
-            }
-            ibHistory.setOnClickListener {
-                val intent = Intent(this, Treatment_History_List::class.java)
-                startActivity(intent)
-                overridePendingTransition(0, 0)
-            }
-            ibProfile.setOnClickListener {
-                val intent = Intent(this, Account_Setting::class.java)
-                startActivity(intent)
-                overridePendingTransition(0, 0)
-            }
-
+        }
+        ibConsult.setOnClickListener {
+            val intent = Intent(this, Consultation_List::class.java)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
+        }
+        ibHistory.setOnClickListener {
+            val intent = Intent(this, Treatment_History_List::class.java)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
+        }
+        ibProfile.setOnClickListener {
+            val intent = Intent(this, Account_Setting::class.java)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
         }
     }
 }

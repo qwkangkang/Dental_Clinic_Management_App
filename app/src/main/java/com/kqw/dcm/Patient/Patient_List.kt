@@ -56,7 +56,7 @@ class Patient_List: AppCompatActivity() {
         //init setting
         ibPatientC.setImageResource(R.drawable.patient_orange)
         tvTitle.text = "Patient"
-        btnBack.visibility = View.INVISIBLE
+
 
         //variable
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
@@ -207,9 +207,10 @@ class Patient_List: AppCompatActivity() {
                     Toast.makeText(this, "Something Wrong", Toast.LENGTH_SHORT).show()
                 }
 
-//            val intent = Intent(this, Patient::class.java)
-//            startActivity(intent)
-//            overridePendingTransition(0, 0)
+        }
+
+        btnBack.setOnClickListener {
+            finish()
         }
 
         //menu bar button

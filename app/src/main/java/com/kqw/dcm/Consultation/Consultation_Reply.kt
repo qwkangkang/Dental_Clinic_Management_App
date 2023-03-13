@@ -8,12 +8,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kqw.dcm.AccountSetting.Account_Setting
+import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Appointment.Appointment_List
 import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.Home.MainActivity_Clinic
@@ -21,6 +23,7 @@ import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.R
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule
+import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.consultation_list.*
 import kotlinx.android.synthetic.main.consultation_reply.*
 import kotlinx.android.synthetic.main.create_consultation.*
@@ -147,10 +150,20 @@ class Consultation_Reply : AppCompatActivity() {
                 val intent = Intent(this, Consultation_List::class.java)
                 startActivity(intent)
                 overridePendingTransition(0, 0)
+            }else{
+                Toast.makeText(this, "Assistant Cannot Perform This Action", Toast.LENGTH_SHORT).show()
             }
         }
         btnBack.setOnClickListener {
             finish()
+        }
+        btnLogout.setOnClickListener {
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
+            val intent = Intent(this, Login::class.java)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
         }
         tvConDateTime.setOnClickListener{
             val date = FieldValue.serverTimestamp()
@@ -180,7 +193,7 @@ class Consultation_Reply : AppCompatActivity() {
                         overridePendingTransition(0, 0)
                     }
                     R.id.iSche -> {
-                        val intent = Intent(this, Schedule::class.java)
+                        val intent = Intent(this, Schedule_List::class.java)
                         startActivity(intent)
                         overridePendingTransition(0, 0)
                     }

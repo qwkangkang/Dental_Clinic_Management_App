@@ -16,6 +16,7 @@ import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Appointment.Appointment_List
 import com.kqw.dcm.Consultation.Consultation_List
 import com.kqw.dcm.Home.MainActivity
+import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.R
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import kotlinx.android.synthetic.main.activity_main.*
@@ -106,7 +107,8 @@ class Patient : AppCompatActivity(){
 
         btnTreatment.setOnClickListener {
             val intent = Intent(this, Treatment_History_List::class.java)
-            intent.putExtra("user_message", patientID)
+//            intent.putExtra("user_message", patientID)
+            intent.putExtra("msgPatientID", patientID)
             startActivity(intent)
         }
 
@@ -136,7 +138,7 @@ class Patient : AppCompatActivity(){
 
         //menu bar button
         ibHomeC.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MainActivity_Clinic::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
         }

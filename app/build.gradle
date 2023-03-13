@@ -23,6 +23,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            multiDexEnabled true
         }
     }
     compileOptions {
@@ -42,10 +43,29 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.firebase:firebase-firestore-ktx:24.0.2'
     implementation 'com.google.firebase:firebase-auth-ktx:21.1.0'
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.3.0'
+    //implementation 'com.budiyev.android:code-scanner:2.1.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
     implementation 'com.google.firebase:firebase-analytics:21.2.0'
     implementation 'com.google.firebase:firebase-database:20.1.0'
+
+    implementation 'com.android.volley:volley:1.2.0'
+
+    implementation 'com.google.zxing:core:3.2.0'
+
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
+
+    implementation 'com.github.jakebonk:NotifyMe:1.0.1'
+//    api 'com.google.firebase:firebase-core:17.2.0'
+//    implementation 'com.google.firebase:firebase-core:19.0.1'
+//    implementation 'com.google.firebase:firebase-analytics:19.0.1'
+//    implementation 'androidx.work:work-runtime:2.7.0-alpha05'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
+
+
 }

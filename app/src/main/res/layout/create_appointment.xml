@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#E7EBF2">
+    android:background="#EEF0F4">
     <include layout="@layout/title_bar"/>
     <androidx.cardview.widget.CardView
         android:id="@+id/cvCreateAppointment"
@@ -164,15 +164,22 @@
                         android:padding="0dp"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <Button
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/btnCreate"
-                    android:backgroundTint="#7E83AA"
-                    android:text="Make Appointment"
-                    android:layout_marginHorizontal="40dp"
-                    android:textAllCaps="false"
-                    android:layout_marginTop="30dp"/>
+                    android:id="@+id/tilBtnCreate"
+                    app:helperTextTextColor="#FF5722">
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/btnCreate"
+                        android:backgroundTint="#7E83AA"
+                        android:text="Make Appointment"
+                        android:layout_marginHorizontal="40dp"
+                        android:textAllCaps="false"
+                        android:layout_marginTop="30dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
 
             </LinearLayout>
         </ScrollView>

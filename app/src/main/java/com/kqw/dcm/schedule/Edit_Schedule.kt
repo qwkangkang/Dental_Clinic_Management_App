@@ -18,6 +18,7 @@ import com.kqw.dcm.*
 import com.kqw.dcm.AccountSetting.Account_Setting
 import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.AccountSetting.Register
+import com.kqw.dcm.Appointment.PopUpFragment
 import com.kqw.dcm.Consultation.Consultation_List
 import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.Patient.Patient
@@ -28,6 +29,7 @@ import kotlinx.android.synthetic.main.menu_bar_clinic.*
 import kotlinx.android.synthetic.main.patient.*
 import kotlinx.android.synthetic.main.register_doc_assistant.*
 import kotlinx.android.synthetic.main.schedule.*
+import kotlinx.android.synthetic.main.schedule_list.*
 import kotlinx.android.synthetic.main.title_bar.*
 import kotlinx.android.synthetic.main.title_bar.tvTitle
 import java.time.LocalDate
@@ -48,7 +50,7 @@ class Edit_Schedule: AppCompatActivity() {
     var ROLE_KEY = "role"
     var sp_uid = ""
     var sp_role = ""
-    var statusItems = listOf("Available", "Booked", "Unavailable")
+    var statusItems = listOf("Available", "Unavailable")
     var timeItems = listOf("08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
     "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM",
         "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM", "08:00 PM")
@@ -61,9 +63,8 @@ class Edit_Schedule: AppCompatActivity() {
         setContentView(R.layout.edit_schedule)
 
         //init setting
-        btnBack.visibility = View.INVISIBLE
         tvTitle.text = "Schedule"
-        //ibApp.setImageResource(R.drawable.appointment_orange)
+        ibHomeC.setImageResource(R.drawable.home_orange)
 
         //variables
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
@@ -131,6 +132,9 @@ class Edit_Schedule: AppCompatActivity() {
 
 
         btnLogout.setOnClickListener {
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
@@ -168,6 +172,8 @@ class Edit_Schedule: AppCompatActivity() {
 
             val compareDate = selectedDate?.compareTo(LocalDate.now())
             val compareTime = selectedStartTime?.compareTo(selectedEndTime)
+            var found:Boolean=false
+            var foundID:String?=null
 
             tilDateEditSchedule.helperText = compareDate?.let { it1 -> validSelectedDate(it1) }
             tilEndTime.helperText = compareTime?.let { it1 -> validSelectedTime(it1) }
@@ -180,24 +186,81 @@ class Edit_Schedule: AppCompatActivity() {
                 val strSelectedEndTime:String?=selectedEndTime?.format(timeFormat)
                 selectedStatus = ddlStatus.text.toString()
 
-                val id = db.collection("collection_name").document().id
+                //check whether got record before
+                db.collection("Schedule").get()
+                    .addOnSuccessListener {
+                        if (!it.isEmpty) {
+                            for (schedule in it.documents) {
+                                val sDoctorID = schedule.data?.get("doctor_ID").toString()
+                                val sStrScheduleDate = schedule.data?.get("schedule_date").toString()
+                                if (sDoctorID == doctorID && sStrScheduleDate==strSelectedDate) {
+                                    val sScheduleID =  schedule.data?.get("schedule_ID").toString()
+                                    val sStartTime = schedule.data?.get("schedule_start_time").toString()
+                                    val sEndTime = schedule.data?.get("schedule_end_time").toString()
+                                    val timeSStartTime = LocalTime.parse(sStartTime, timeFormat)
+                                    val timeSEndTime = LocalTime.parse(sEndTime, timeFormat)
+                                    if((selectedStartTime?.compareTo(timeSStartTime)!! >=0&&selectedEndTime?.compareTo(timeSEndTime)!!<=0)
+                                        ||(selectedStartTime?.compareTo(timeSStartTime)!! <=0&&selectedEndTime?.compareTo(timeSStartTime)!!>0)
+                                        ||(selectedStartTime?.compareTo(timeSEndTime)!! <0&&selectedEndTime?.compareTo(timeSEndTime)!!>=0)){
+                                        Log.d(TAG, "Override")
+                                        found=true
+                                        foundID=sScheduleID
+                                        break
 
-                val scheduleMap = hashMapOf(
-                    "schedule_ID" to id,
-                    "schedule_date" to strSelectedDate,
-                    "schedule_start_time" to strSelectedStartTime,
-                    "schedule_end_time" to strSelectedEndTime,
-                    "schedule_status" to selectedStatus,
-                    "doctor_ID" to doctorID
-                )
-                db.collection("Schedule").document(id)
-                    .set(scheduleMap)
-                    .addOnSuccessListener { Log.d(Edit_Schedule.TAG, "Success add schedule") }
-                    .addOnFailureListener { e -> Log.w(Edit_Schedule.TAG, "Error") }
+                                    }else{
+                                        //new, not override
+                                        Log.d(TAG, "New time")
+                                    }
+                                }else if(sDoctorID == doctorID && sStrScheduleDate!=strSelectedDate){
+                                    //new, not override
+                                    Log.d(TAG, "New Date")
+                                }
+                            }
+                            if(found){
+                                //going to del
+                                Log.d(TAG, "found")
+                                Log.d(TAG, "Going to del "+foundID)
+                                //ask for delete the existing
+                                var dialog = PopUpFragmentDeleteSchedule()
+                                val args = Bundle()
+                                args.putString("keyFoundID", foundID)
+                                dialog.arguments = args
+                                dialog.show(supportFragmentManager, "customDialog")
+                                overridePendingTransition(0, 0)
+
+                            }
+                            else{
+                                //create
+                                Log.d(TAG, "new")
+                                val id = db.collection("collection_name").document().id
+
+                                    val scheduleMap = hashMapOf(
+                                        "schedule_ID" to id,
+                                        "schedule_date" to strSelectedDate,
+                                        "schedule_start_time" to strSelectedStartTime,
+                                        "schedule_end_time" to strSelectedEndTime,
+                                        "schedule_status" to selectedStatus,
+                                        "doctor_ID" to doctorID
+                                    )
+                                    db.collection("Schedule").document(id)
+                                        .set(scheduleMap)
+                                        .addOnSuccessListener { Log.d(Edit_Schedule.TAG, "Success add schedule") }
+                                        .addOnFailureListener { e -> Log.w(Edit_Schedule.TAG, "Error") }
+                                val intent = Intent(this, Schedule_List::class.java)
+                                startActivity(intent)
+                                overridePendingTransition(0, 0)
+                            }
+                        }
+                    }.addOnFailureListener { Log.d(TAG, "failed retrieve schedule") }
 
             }
         }
 
+        btnBack.setOnClickListener {
+            val intent = Intent(this, Schedule_List::class.java)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
+        }
         //menu bar button
         ibHomeC.setOnClickListener {
             val intent = Intent(this, MainActivity_Clinic::class.java)

@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.kqw.dcm.*
 import com.kqw.dcm.AccountSetting.Account_Setting
 import com.kqw.dcm.AccountSetting.Login
@@ -20,6 +21,7 @@ import com.kqw.dcm.FAQ.Create_FAQ
 import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule
+import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.create_consultation.*
 import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.title_bar.*
@@ -48,6 +50,7 @@ class Create_Consultation: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.create_consultation)
+        AndroidThreeTen.init(this)
 
         //init setting
         ibConsult.setImageResource(R.drawable.consult_orange)
@@ -59,7 +62,8 @@ class Create_Consultation: AppCompatActivity() {
         //variables
         val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
         val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
-        val getToday = LocalDateTime.now().plusHours(12).minusMinutes(8)
+//        val getToday = LocalDateTime.now().plusHours(12).minusMinutes(8)
+        val getToday = LocalDateTime.now().plusHours(8)
         val today = getToday.format(dateFormat)
 //        val currentTime = LocalDateTime.now().plusHours(8).format(timeFormat)
         val currentTime = getToday.format(timeFormat)
@@ -78,44 +82,51 @@ class Create_Consultation: AppCompatActivity() {
             Log.d(TAG, "try:"+currentTime)
 
 
-            val consultationQues = etConsultQues.text.toString().trim()
-            db = FirebaseFirestore.getInstance()
-            db.collection("Patient").get()
-                .addOnSuccessListener {
-                    if (!it.isEmpty) {
-                        for (patient in it.documents) {
-                            val userID = patient.get("user_ID").toString()
-                            if (userID == sp_uid) {
-                                val patientID = patient.get("patient_ID").toString()
-                                val conID = db.collection("collection_name").document().id
-                                val conMap = hashMapOf(
-                                    "consultation_ID" to conID,
-                                    "consultation_question" to consultationQues,
-                                    "consultation_answer" to "",
-                                    "consultation_status" to "Unsolved",
-                                    "consultation_date" to today,
-                                    "consultation_time" to currentTime,
-                                    "patient_ID" to patientID,
-                                    "doctor_ID" to ""
-                                )
-                                db.collection("Consultation").document(conID)
-                                    .set(conMap)
-                                    .addOnSuccessListener { Log.d(TAG, "Success") }
-                                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
-//                                finish()
-                                val intent = Intent(this, Consultation_List::class.java)
-                                startActivity(intent)
-                                overridePendingTransition(0, 0)
-                            }
-                        }
-                    }
-                }.addOnFailureListener { Log.d(TAG, "failed retrieve patient") }
+//            val consultationQues = etConsultQues.text.toString().trim()
+//            db = FirebaseFirestore.getInstance()
+//            db.collection("Patient").get()
+//                .addOnSuccessListener {
+//                    if (!it.isEmpty) {
+//                        for (patient in it.documents) {
+//                            val userID = patient.get("user_ID").toString()
+//                            if (userID == sp_uid) {
+//                                val patientID = patient.get("patient_ID").toString()
+//                                val conID = db.collection("collection_name").document().id
+//                                val conMap = hashMapOf(
+//                                    "consultation_ID" to conID,
+//                                    "consultation_question" to consultationQues,
+//                                    "consultation_answer" to "",
+//                                    "consultation_status" to "Unsolved",
+//                                    "consultation_date" to today,
+//                                    "consultation_time" to currentTime,
+//                                    "patient_ID" to patientID,
+//                                    "doctor_ID" to ""
+//                                )
+//                                db.collection("Consultation").document(conID)
+//                                    .set(conMap)
+//                                    .addOnSuccessListener { Log.d(TAG, "Success") }
+//                                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
+////                                finish()
+//                                val intent = Intent(this, Consultation_List::class.java)
+//                                startActivity(intent)
+//                                overridePendingTransition(0, 0)
+//                            }
+//                        }
+//                    }
+//                }.addOnFailureListener { Log.d(TAG, "failed retrieve patient") }
         }
 
         btnLogout.setOnClickListener {
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
+        }
+
+        btnBack.setOnClickListener {
+            finish()
         }
 
         //menu bar button
@@ -139,7 +150,7 @@ class Create_Consultation: AppCompatActivity() {
                         overridePendingTransition(0, 0)
                     }
                     R.id.iSche -> {
-                        val intent = Intent(this, Schedule::class.java)
+                        val intent = Intent(this, Schedule_List::class.java)
                         startActivity(intent)
                         overridePendingTransition(0, 0)
                     }

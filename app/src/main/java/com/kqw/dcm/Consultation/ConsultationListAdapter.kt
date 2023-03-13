@@ -1,5 +1,6 @@
 package com.kqw.dcm.Consultation
 
+import android.app.Activity
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
@@ -42,7 +43,9 @@ class ConsultationListAdapter(private val conList: ArrayList<Consultation_Data>)
             val intent = Intent(holder.itemView.context, Consultation_Reply::class.java)
             intent.putExtra("conID_message", msgConID)
             //intent.putExtra("edit_message", msgEdit)
-            holder.itemView.context.startActivity(intent)
+            val activity = holder.itemView.context as Activity
+            activity.startActivity(intent)
+            activity.overridePendingTransition(0,0)
         }
     }
     override fun getItemCount(): Int {

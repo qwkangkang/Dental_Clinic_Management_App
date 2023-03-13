@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,6 +24,7 @@ import com.kqw.dcm.Patient.Patient_Data
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.R
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
+import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.appointment_list.*
 import kotlinx.android.synthetic.main.faq_list.*
 import kotlinx.android.synthetic.main.menu_bar.*
@@ -46,11 +48,12 @@ class FAQ_List: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.faq_list)
-//        ibHome.setImageResource(R.drawable.home_orange)
+        ibHome.setImageResource(R.drawable.home_orange)
+        ibHomeC.setImageResource(R.drawable.home_orange)
 
         //init setting
         tvTitle.text = "FAQ"
-        btnBack.visibility = View.INVISIBLE
+
 
         //variables
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
@@ -58,11 +61,16 @@ class FAQ_List: AppCompatActivity() {
         sp_role = sharedPreferences.getString(ROLE_KEY, null)!!
 
 
-        if(sp_role=="Doctor"||sp_role=="Assistant"){
+        if(sp_role=="Doctor"){
             mnPatientFAQ.visibility = View.INVISIBLE
+        }
+        else if (sp_role=="Assistant"){
+            mnPatientFAQ.visibility = View.INVISIBLE
+            ibAdd.visibility = View.INVISIBLE
         }
         else{
             mnClinicFAQ.visibility = View.INVISIBLE
+            ibAdd.visibility = View.INVISIBLE
         }
 
         rvFAQ.layoutManager = LinearLayoutManager(this)
@@ -93,6 +101,9 @@ class FAQ_List: AppCompatActivity() {
 
 
         btnLogout.setOnClickListener {
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
@@ -104,6 +115,10 @@ class FAQ_List: AppCompatActivity() {
             overridePendingTransition(0, 0)
         }
 
+        btnBack.setOnClickListener {
+            finish()
+        }
+
         //menu bar button
         ibHome.setOnClickListener{
             val intent = Intent(this, MainActivity::class.java)
@@ -111,9 +126,26 @@ class FAQ_List: AppCompatActivity() {
             overridePendingTransition(0, 0)
         }
         ibApp.setOnClickListener{
-            val intent = Intent(this, Appointment_List::class.java)
-            startActivity(intent)
-            overridePendingTransition(0, 0)
+            val popupMenu = PopupMenu(this, ibApp)
+            val inflater = popupMenu.menuInflater
+            inflater.inflate(R.menu.btn_menu_submenu, popupMenu.menu)
+            popupMenu.show()
+
+            popupMenu.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.iApp -> {
+                        val intent = Intent(this, Appointment_List::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                    }
+                    R.id.iSche -> {
+                        val intent = Intent(this, Schedule_List::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                    }
+                }
+                true
+            }
         }
         ibConsult.setOnClickListener{
             val intent = Intent(this, Consultation_List::class.java)

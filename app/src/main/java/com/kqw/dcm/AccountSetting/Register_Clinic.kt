@@ -1,5 +1,6 @@
 package com.kqw.dcm.AccountSetting
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -10,7 +11,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.R
+import kotlinx.android.synthetic.main.create_appointment.*
 import kotlinx.android.synthetic.main.register.*
 import kotlinx.android.synthetic.main.register_doc_assistant.*
 import kotlinx.android.synthetic.main.register_doc_assistant.btnCancel
@@ -53,7 +56,7 @@ class Register_Clinic:AppCompatActivity() {
         var specialist: String?=null
         adapterItems = ArrayAdapter(this, R.layout.list_item_ddl, specialistItems)
         ddlSpecialist.setAdapter(adapterItems)
-
+        ddlSpecialist.setText(adapterItems.getItem(0), false)
 
         btnSignUp.setOnClickListener {
             fname=etFName.text.toString().trim()
@@ -72,9 +75,13 @@ class Register_Clinic:AppCompatActivity() {
             }
             if (radDoc.isChecked) {
                 role="Doctor"
+                tvSpecialist.isEnabled = true
+                ddlSpecialist.isEnabled = true
             }
             else if (radAssistant.isChecked) {
                 role="Assistant"
+                tvSpecialist.isEnabled = false
+                ddlSpecialist.isEnabled = false
             }
             specialist = ddlSpecialist.text.toString().trim()
 
@@ -92,53 +99,97 @@ class Register_Clinic:AppCompatActivity() {
                 tilCPasswordClinic.helperText==null && tilSpecialist.helperText==null) {
 
                // Toast.makeText(this, "validation pass", Toast.LENGTH_SHORT).show()
+                var emailFound:Boolean=false
+                val email = etEmail.text.toString().trim()
+                db.collection("User").get()
+                    .addOnSuccessListener {
+                        if (!it.isEmpty) {
+                            for (user in it.documents) {
+                                var sEmail: String = user.data?.get("user_email").toString()
+                                if (sEmail == email) {
+                                    Log.d(Register.TAG, "found the same")
+                                    emailFound = true
+                                }
+                            }
+                            if (emailFound) {
+                                Toast.makeText(
+                                    this,
+                                    "This Email Has Been Registered",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                val id = db.collection("collection_name").document().id
 
-                val id = db.collection("collection_name").document().id
+                                val userMap = hashMapOf(
+                                    "user_ID" to id,
+                                    "user_first_name" to fname,
+                                    "user_last_name" to lname,
+                                    "user_email" to email,
+                                    "user_role" to role,
+                                    "user_password" to password,
+                                    "user_phone" to contactNo,
+                                    "user_IC_no" to IC,
+                                    "user_gender" to gender
+                                )
 
-                val userMap = hashMapOf(
-                    "user_ID" to id,
-                    "user_first_name" to fname,
-                    "user_last_name" to lname,
-                    "user_email" to email,
-                    "user_role" to role,
-                    "user_password" to password,
-                    "user_phone" to contactNo,
-                    "user_IC_no" to IC,
-                    "user_gender" to gender
-                )
+                                db.collection("User").document(id)
+                                    .set(userMap)
+                                    .addOnSuccessListener {
+                                        Log.d(
+                                            Register.TAG,
+                                            "Success add user"
+                                        )
+                                    }
+                                    .addOnFailureListener { e -> Log.w(Register.TAG, "Error") }
 
-                db.collection("User").document(id)
-                    .set(userMap)
-                    .addOnSuccessListener { Log.d(Register.TAG, "Success add user") }
-                    .addOnFailureListener { e -> Log.w(Register.TAG, "Error") }
+                                if (role == "Doctor") {
+                                    val doctorID = db.collection("collection_name1").document().id
 
-                if (role=="Doctor"){
-                    val doctorID = db.collection("collection_name1").document().id
+                                    val doctorMap = hashMapOf(
+                                        "doctor_ID" to doctorID,
+                                        "doctor_specialist" to specialist,
+                                        "user_ID" to id
+                                    )
 
-                    val doctorMap = hashMapOf(
-                        "doctor_ID" to doctorID,
-                        "doctor_specialst" to specialist,
-                        "user_ID" to id
-                    )
+                                    db.collection("Doctor").document(doctorID)
+                                        .set(doctorMap)
+                                        .addOnSuccessListener {
+                                            Log.d(
+                                                Register.TAG,
+                                                "Success Add doctor"
+                                            )
+                                        }
+                                        .addOnFailureListener { e -> Log.w(Register.TAG, "Error") }
+                                    Toast.makeText(this, "Register Successful. Please Login First", Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(this, Login::class.java)
+                                    startActivity(intent)
+                                    overridePendingTransition(0, 0)
+                                } else if (role == "Assistant") {
+                                    val assistantID =
+                                        db.collection("collection_name1").document().id
 
-                    db.collection("Doctor").document(doctorID)
-                        .set(doctorMap)
-                        .addOnSuccessListener { Log.d(Register.TAG, "Success Add doctor") }
-                        .addOnFailureListener { e -> Log.w(Register.TAG, "Error") }
-                }
-                else if(role=="Assistant"){
-                    val assistantID = db.collection("collection_name1").document().id
+                                    val assistantMap = hashMapOf(
+                                        "assistant_ID" to assistantID,
+                                        "user_ID" to id
+                                    )
 
-                    val assistantMap = hashMapOf(
-                        "assistant_ID" to assistantID,
-                        "user_ID" to id
-                    )
-
-                    db.collection("Assistant").document(assistantID)
-                        .set(assistantMap)
-                        .addOnSuccessListener { Log.d(Register.TAG, "Success Add assistant") }
-                        .addOnFailureListener { e -> Log.w(Register.TAG, "Error") }
-                }
+                                    db.collection("Assistant").document(assistantID)
+                                        .set(assistantMap)
+                                        .addOnSuccessListener {
+                                            Log.d(
+                                                Register.TAG,
+                                                "Success Add assistant"
+                                            )
+                                        }
+                                        .addOnFailureListener { e -> Log.w(Register.TAG, "Error") }
+                                    Toast.makeText(this, "Register Successful. Please Login First", Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(this, Login::class.java)
+                                    startActivity(intent)
+                                    overridePendingTransition(0, 0)
+                                }
+                            }
+                        }
+                    }
 
             }
         }

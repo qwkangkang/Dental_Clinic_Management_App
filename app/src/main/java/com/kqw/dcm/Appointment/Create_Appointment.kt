@@ -1,6 +1,9 @@
 package com.kqw.dcm.Appointment
 
+
+import android.app.AlarmManager
 import android.app.DatePickerDialog
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -9,22 +12,25 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.PopupMenu
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.getSystemService
+import com.allyants.notifyme.NotifyMe
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.kqw.dcm.AccountSetting.Account_Setting
-import com.kqw.dcm.Consultation.Consultation_List
 import com.kqw.dcm.AccountSetting.Login
-import com.kqw.dcm.AccountSetting.Register
+import com.kqw.dcm.Consultation.Consultation_List
 import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.Home.MainActivity_Clinic
-import com.kqw.dcm.Patient.Patient_Data
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.R
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Edit_Schedule
+import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.appointment_list.*
 import kotlinx.android.synthetic.main.appointment_list.mnClinic
 import kotlinx.android.synthetic.main.appointment_list.mnPatient
@@ -40,7 +46,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
+
 
 class Create_Appointment:AppCompatActivity() {
     companion object{
@@ -54,11 +60,17 @@ class Create_Appointment:AppCompatActivity() {
     var ROLE_KEY = "role"
     var sp_uid = ""
     var sp_role = ""
+    @RequiresApi(Build.VERSION_CODES.O)
+    val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+    @RequiresApi(Build.VERSION_CODES.O)
+    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.create_appointment)
+        AndroidThreeTen.init(this)
 
         //init setting
         tvTitle.text = "Appointment"
@@ -76,15 +88,13 @@ class Create_Appointment:AppCompatActivity() {
         val year = c.get(Calendar.YEAR)
         val month = c.get(Calendar.MONTH)
         val day = c.get(Calendar.DAY_OF_MONTH)
-        val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
         val today = LocalDateTime.now().format(dateFormat)
         etAppDate.setText(today)
         var doctorNameList: ArrayList<String>
         var roomIDList: ArrayList<String>
         var timeItems = listOf("08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
             "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM",
-            "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM", "08:00 PM")
+            "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM")
         var serviceItems = listOf("Checkup (30mins)", "Scaling (30mins)", "Filling (1hr)", "Extraction (2hrs)")
         doctorNameList = arrayListOf()
         roomIDList = arrayListOf()
@@ -100,6 +110,8 @@ class Create_Appointment:AppCompatActivity() {
         var selectedDoc:String?=null
         var selectedRoom:String?=null
         var selectedDoctorID:String?=null
+        var btnCreateClick:Boolean
+        var avai:Boolean
 
         if(sp_role=="Doctor"||sp_role=="Assistant"){
             mnPatient.visibility = View.INVISIBLE
@@ -112,38 +124,63 @@ class Create_Appointment:AppCompatActivity() {
 
         bundle?.let {
             patientID = bundle.getString("msgPatientID")
+            avai = bundle.getBoolean("msgAvai")
         }
 
         db = FirebaseFirestore.getInstance()
 
-        val refPatient = db.collection("Patient").document(patientID.toString())
-        refPatient.get().addOnSuccessListener {
-            if (it != null) {
-                userID = it.data?.get("user_ID").toString()
+        if(sp_role=="Doctor"||sp_role=="Assistant"){
+            val refPatient = db.collection("Patient").document(patientID.toString())
+            refPatient.get().addOnSuccessListener {
+                if (it != null) {
+                    userID = it.data?.get("user_ID").toString()
 
-                val refUser = db.collection("User").document(userID.toString())
-                refUser.get().addOnSuccessListener {
-                    if (it != null) {
-                        patientName = it.data?.get("user_first_name")
-                            .toString() + " " + it.data?.get("user_last_name").toString()
-                        tvPatientName.text = patientName
+                    val refUser = db.collection("User").document(userID.toString())
+                    refUser.get().addOnSuccessListener {
+                        if (it != null) {
+                            patientName = it.data?.get("user_first_name")
+                                .toString() + " " + it.data?.get("user_last_name").toString()
+                            tvPatientName.text = patientName
+                        }
                     }
+                        .addOnFailureListener {
+                            Log.d(Create_Appointment.TAG, "retrieve user failed")
+                        }
                 }
-                    .addOnFailureListener {
-                        Log.d(Create_Appointment.TAG, "retrieve user failed")
-                    }
+            }.addOnFailureListener {
+                Log.d(Create_Appointment.TAG, "retrieve patient failed")
             }
-        }.addOnFailureListener {
-            Log.d(Create_Appointment.TAG, "retrieve patient failed")
+        }else{
+            tvPatientName.text = ""
+            tvRoom.visibility = View.GONE
+            ddlRoom.visibility = View.GONE
+            tilRoom.visibility = View.GONE
         }
+
+
+        adapterTimeItems = ArrayAdapter(this, R.layout.list_item_ddl, timeItems)
+        adapterServiceItems = ArrayAdapter(this, R.layout.list_item_ddl, serviceItems)
+        adapterDocNameItems = ArrayAdapter(this, R.layout.list_item_ddl, doctorNameList)
+        adapterRoomItems = ArrayAdapter(this, R.layout.list_item_ddl, roomIDList)
+        ddlAppTime.setAdapter(adapterTimeItems)
+        ddlService.setAdapter(adapterServiceItems)
+        ddlDocInCharge.setAdapter(adapterDocNameItems)
+        ddlRoom.setAdapter(adapterRoomItems)
+        ddlAppTime.setText(adapterTimeItems.getItem(0), false)
+        ddlService.setText(adapterServiceItems.getItem(0), false)
+
 
         db.collection("Room").get()
             .addOnSuccessListener {
                 if (!it.isEmpty) {
                     for (room in it.documents) {
                         val roomID = room.data?.get("room_ID").toString()
-//                        Log.d(Create_Appointment.TAG, "room ID=>"+roomID)
                         roomIDList.add(roomID)
+
+                        if(roomIDList!=null&&roomIDList.size>0){
+                            val firstRoom = roomIDList[0].toString()
+                            ddlRoom.setText(firstRoom,false)
+                        }
                     }
                 }
             }
@@ -158,8 +195,16 @@ class Create_Appointment:AppCompatActivity() {
                         val role = user.data?.get("user_role").toString()
                         if(role=="Doctor"){
                             val doctorName = user.data?.get("user_first_name").toString()+" "+user.data?.get("user_last_name").toString()
-//                            Log.d(Create_Appointment.TAG, "doctor name=>"+doctorName)
                             doctorNameList.add("Dr "+doctorName)
+                            if(doctorNameList!=null&&doctorNameList.size>0){
+                                Log.d(TAG, "not null n >0")
+                            }
+                            if(doctorNameList!=null&&doctorNameList.size>0){
+//
+                                val firstDoc = doctorNameList[0]
+                                Log.d(TAG, firstDoc)
+                                ddlDocInCharge.setText(firstDoc,false)
+                            }
                         }
 
                     }
@@ -169,26 +214,26 @@ class Create_Appointment:AppCompatActivity() {
                 Log.d(Appointment_List.TAG, "failed retrieve user")
             }
 
-        adapterTimeItems = ArrayAdapter(this, R.layout.list_item_ddl, timeItems)
-        adapterServiceItems = ArrayAdapter(this, R.layout.list_item_ddl, serviceItems)
-        adapterDocNameItems = ArrayAdapter(this, R.layout.list_item_ddl, doctorNameList)
-        adapterRoomItems = ArrayAdapter(this, R.layout.list_item_ddl, roomIDList)
-        ddlAppTime.setAdapter(adapterTimeItems)
-        ddlService.setAdapter(adapterServiceItems)
-        ddlDocInCharge.setAdapter(adapterDocNameItems)
-        ddlRoom.setAdapter(adapterRoomItems)
-        ddlAppTime.setText(adapterTimeItems.getItem(0), false)
-        ddlService.setText(adapterServiceItems.getItem(0), false)
-//        ddlDocInCharge.setText(adapterDocNameItems.getItem(0), false)
-//        ddlRoom.setText(adapterRoomItems.getItem(0), false)
+
+
+//        if(btnCreate.isPressed){
+//            if(avai==false){
+//                Toast.makeText(this, "Failed Making Appointment. Please Check Schedule", Toast.LENGTH_SHORT).show()
+//                Log.d(TAG, avai.toString())
+//            }
+//        }
+
+
+
 
         btnBack.setOnClickListener {
-            val intent = Intent(this, Appointment_List::class.java)
-            startActivity(intent)
-            overridePendingTransition(0, 0)
+            finish()
         }
 
         btnLogout.setOnClickListener {
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
@@ -218,14 +263,11 @@ class Create_Appointment:AppCompatActivity() {
         }
 
         btnCreate.setOnClickListener {
-
-            //selectedDate
-//            Log.d(Create_Appointment.TAG, "start time=>"+ddlAppTime.text.toString())
+            //tilBtnCreate.helperText = "Failed Making Appointment. Please Check Schedule"
             appStartTime = LocalTime.parse(ddlAppTime.text.toString(), timeFormat)
             selectedService = ddlService.text.toString()
             selectedRoom = ddlRoom.text.toString()
             selectedDate = LocalDate.parse(etAppDate.text.toString(), dateFormat)
-//            Log.d(Create_Appointment.TAG, "service=>"+selectedService)
             if (selectedService=="Checkup (30mins)"||selectedService=="Scaling (30mins)"){
                 appEndTime = appStartTime?.plusMinutes(30)
             }
@@ -239,21 +281,15 @@ class Create_Appointment:AppCompatActivity() {
             val compareDate = selectedDate?.compareTo(LocalDate.now())
             tilAppDate.helperText = compareDate?.let { it1 -> validSelectedDate(it1) }
 
-//            now.add(Calendar.MINUTE, diffInMin.toInt())
-//            appEndTime = appStartTime.add(Calendar.MINUTE, diff)
-
             selectedDoc = ddlDocInCharge.text.toString()
             val strDoctorName = selectedDoc?.substring(3)
 
-            Log.d(Create_Appointment.TAG, "Step -2")
             db.collection("User").get()
                 .addOnSuccessListener {
-                    Log.d(Create_Appointment.TAG, "Step -1")
                     if (!it.isEmpty) {
                         for (user in it.documents) {
                             val role = user.data?.get("user_role").toString()
                             if(role=="Doctor"){
-                                Log.d(Create_Appointment.TAG, "Step 0")
                                 val doctorName = user.data?.get("user_first_name").toString()+" "+user.data?.get("user_last_name").toString()
                                 if(doctorName==strDoctorName) {
                                     val userID = user.data?.get("user_ID").toString()
@@ -264,9 +300,6 @@ class Create_Appointment:AppCompatActivity() {
                                                     if (userID == doctor.data?.get("user_ID").toString()
                                                     ) {
                                                         selectedDoctorID = doctor.data?.get("doctor_ID").toString()
-                                                        Log.d(Create_Appointment.TAG, "1. selected docID: "+selectedDoctorID)
-
-
 
                                                         //paste
                                                         var availableDate:LocalDate?=null
@@ -310,11 +343,18 @@ class Create_Appointment:AppCompatActivity() {
 
                                                                                                 if(status=="Available"){
                                                                                                     Log.d(Create_Appointment.TAG, "All is available after retrieve")
+                                                                                                    //test
                                                                                                     val scheduleID = schedule.data?.get("schedule_ID").toString()
                                                                                                     Log.d(Create_Appointment.TAG, "date"+etAppDate.text.toString())
                                                                                                     Log.d(Create_Appointment.TAG, "start"+appStartTime?.format(timeFormat))
                                                                                                     createAppointment(etAppDate.text.toString(), appStartTime?.format(timeFormat),
                                                                                                         appEndTime?.format(timeFormat), selectedRoom, patientID, scheduleID, selectedService)
+                                                                                                    updateSchedule(scheduleID, availableStartTime, availableEndTime, appStartTime, appEndTime, sStrScheduleDate, sDoctorID)
+                                                                                                    setNotification(selectedDate)
+                                                                                                    //end test
+                                                                                                    avai = true
+                                                                                                   // tilBtnCreate.helperText = ""
+                                                                                                    Log.d(TAG, avai.toString())
                                                                                                 }
                                                                                                 else{
                                                                                                     Log.d(Create_Appointment.TAG, "room is not available")
@@ -348,6 +388,7 @@ class Create_Appointment:AppCompatActivity() {
                                                         //end paste
                                                     }
                                                 }
+
                                             }
                                         }
                                         .addOnFailureListener {
@@ -357,14 +398,27 @@ class Create_Appointment:AppCompatActivity() {
                                 }
                             }
                         }
+//                        if(avai==false){
+//                            Toast.makeText(this, "Failed Making Appointment. Please Check Schedule", Toast.LENGTH_SHORT).show()
+//                            Log.d(TAG, avai.toString())
+//                        }
+
                     }
+
                 }
                 .addOnFailureListener {
                     Log.d(Create_Appointment.TAG, "failed retrieve user")
                 }
 
 
-
+//            if(avai==false){
+//                Toast.makeText(this, "Failed Making Appointment. Please Check Schedule", Toast.LENGTH_SHORT).show()
+//                Log.d(TAG, avai.toString())
+//            }
+//            val intent = Intent(this, Create_Appointment::class.java)
+//            intent.putExtra("msgAvai", )
+//            startActivity(intent)
+//            overridePendingTransition(0, 0)
 
         }
 
@@ -378,9 +432,26 @@ class Create_Appointment:AppCompatActivity() {
             overridePendingTransition(0, 0)
         }
         ibApp.setOnClickListener{
-            val intent = Intent(this, Appointment_List::class.java)
-            startActivity(intent)
-            overridePendingTransition(0, 0)
+            val popupMenu = PopupMenu(this, ibApp)
+            val inflater = popupMenu.menuInflater
+            inflater.inflate(R.menu.btn_menu_submenu, popupMenu.menu)
+            popupMenu.show()
+
+            popupMenu.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.iApp -> {
+                        val intent = Intent(this, Appointment_List::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                    }
+                    R.id.iSche -> {
+                        val intent = Intent(this, Schedule_List::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                    }
+                }
+                true
+            }
         }
         ibConsult.setOnClickListener{
             val intent = Intent(this, Consultation_List::class.java)
@@ -420,6 +491,143 @@ class Create_Appointment:AppCompatActivity() {
             overridePendingTransition(0, 0)
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setNotification(selectedDate: LocalDate?) {
+//        Log.d(TAG, "building notification")
+//        val notifyMe: NotifyMe.Builder = NotifyMe.Builder(applicationContext)
+        var timer: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
+        val year:Int = selectedDate!!.year
+        val month:Int = selectedDate!!.monthValue
+        val day:Int = selectedDate!!.dayOfMonth
+        timer.set(Calendar.YEAR, year)
+        timer.set(Calendar.MONTH, month)
+        timer.set(Calendar.DAY_OF_MONTH, day-3)
+        timer.set(Calendar.HOUR_OF_DAY, 0)
+//        timer.set(Calendar.HOUR,9)
+//        timer.set(Calendar.AM_PM, Calendar.PM)
+        timer.set(Calendar.MINUTE, 0)
+        timer.set(Calendar.SECOND, 0)
+        Log.d(TAG, "timer: "+timer.toString())
+
+        //three day before
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AppAlarm::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE )
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, timer.timeInMillis, pendingIntent)
+
+        //appointment day
+        timer.set(Calendar.DAY_OF_MONTH, day)
+        val alarmManager2 = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent2 = Intent(this, AppAlarm::class.java)
+        val pendingIntent2 = PendingIntent.getBroadcast(this, 0, intent2, PendingIntent.FLAG_IMMUTABLE )
+        alarmManager2.setExact(AlarmManager.RTC_WAKEUP, timer.timeInMillis, pendingIntent2)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun updateSchedule(
+        scheduleID: String,
+        availableStartTime: LocalTime?,
+        availableEndTime: LocalTime?,
+        appStartTime: LocalTime?,
+        appEndTime: LocalTime?,
+        sStrScheduleDate: String,
+        sDoctorID: String
+    ) {
+
+        if(appStartTime?.compareTo(availableStartTime)==0 && appEndTime?.compareTo(availableEndTime)==0){
+            val updateScheduleMap = mapOf(
+                "schedule_status" to "Booked"
+            )
+            db.collection("Schedule").document(scheduleID).update(updateScheduleMap)
+        }else if(appStartTime?.compareTo(availableStartTime)==0 && appEndTime?.compareTo(availableEndTime)!!<0){
+            val updateScheduleMap = mapOf(
+                "schedule_status" to "Booked",
+                "schedule_end_time" to appEndTime.format(timeFormat)
+            )
+            db.collection("Schedule").document(scheduleID).update(updateScheduleMap)
+
+            //create a new one
+            val id = db.collection("collection_name").document().id
+
+            val scheduleMap = hashMapOf(
+                "schedule_ID" to id,
+                "schedule_date" to sStrScheduleDate,
+                "schedule_start_time" to appEndTime.format(timeFormat),
+                "schedule_end_time" to availableEndTime?.format(timeFormat),
+                "schedule_status" to "Available",
+                "doctor_ID" to sDoctorID
+            )
+            db.collection("Schedule").document(id)
+                .set(scheduleMap)
+                .addOnSuccessListener { Log.d(Edit_Schedule.TAG, "Success add schedule") }
+                .addOnFailureListener { e -> Log.w(Edit_Schedule.TAG, "Error") }
+
+        }else if (appStartTime?.compareTo(availableStartTime)!!>0 && appEndTime?.compareTo(availableEndTime)!!<0){
+            val updateScheduleMap = mapOf(
+                "schedule_status" to "Booked",
+                "schedule_start_time" to appStartTime.format(timeFormat),
+                "schedule_end_time" to appEndTime.format(timeFormat)
+            )
+            db.collection("Schedule").document(scheduleID).update(updateScheduleMap)
+
+            //create 2 new
+            val id = db.collection("collection_name").document().id
+
+            val scheduleMap = hashMapOf(
+                "schedule_ID" to id,
+                "schedule_date" to sStrScheduleDate,
+                "schedule_start_time" to availableStartTime?.format(timeFormat),
+                "schedule_end_time" to appStartTime?.format(timeFormat),
+                "schedule_status" to "Available",
+                "doctor_ID" to sDoctorID
+            )
+            db.collection("Schedule").document(id)
+                .set(scheduleMap)
+                .addOnSuccessListener { Log.d(Edit_Schedule.TAG, "Success add schedule") }
+                .addOnFailureListener { e -> Log.w(Edit_Schedule.TAG, "Error") }
+
+
+            val id2 = db.collection("collection_name").document().id
+
+            val scheduleMap2 = hashMapOf(
+                "schedule_ID" to id2,
+                "schedule_date" to sStrScheduleDate,
+                "schedule_start_time" to appEndTime.format(timeFormat),
+                "schedule_end_time" to availableEndTime?.format(timeFormat),
+                "schedule_status" to "Available",
+                "doctor_ID" to sDoctorID
+            )
+            db.collection("Schedule").document(id2)
+                .set(scheduleMap2)
+                .addOnSuccessListener { Log.d(Edit_Schedule.TAG, "Success add schedule") }
+                .addOnFailureListener { e -> Log.w(Edit_Schedule.TAG, "Error") }
+        }else if(appStartTime?.compareTo(availableStartTime)!!>0 && appEndTime?.compareTo(availableEndTime)==0){
+            val updateScheduleMap = mapOf(
+                "schedule_status" to "Booked",
+                "schedule_start_time" to appStartTime.format(timeFormat),
+                "schedule_end_time" to appEndTime.format(timeFormat)
+            )
+            db.collection("Schedule").document(scheduleID).update(updateScheduleMap)
+
+            val id = db.collection("collection_name").document().id
+
+            val scheduleMap = hashMapOf(
+                "schedule_ID" to id,
+                "schedule_date" to sStrScheduleDate,
+                "schedule_start_time" to availableStartTime?.format(timeFormat),
+                "schedule_end_time" to appStartTime?.format(timeFormat),
+                "schedule_status" to "Available",
+                "doctor_ID" to sDoctorID
+            )
+            db.collection("Schedule").document(id)
+                .set(scheduleMap)
+                .addOnSuccessListener { Log.d(Edit_Schedule.TAG, "Success add schedule") }
+                .addOnFailureListener { e -> Log.w(Edit_Schedule.TAG, "Error") }
+        }
+    }
+
+
     private fun validSelectedDate(compareDate:Int):String?{
         if (compareDate<0){
             return "Invalid Selected Time"
@@ -427,12 +635,12 @@ class Create_Appointment:AppCompatActivity() {
         return null
     }
     private fun checkAppTimeAvailability(availableStartTime:LocalTime?, availableEndTime:LocalTime?, appStartTime:LocalTime?, appEndTime:LocalTime?):Boolean{
-        val compareStartTime = appStartTime?.compareTo(availableStartTime)
-        val compareEndTime = appEndTime?.compareTo(availableEndTime)
+        val compareStartTime = (appStartTime?.compareTo(availableStartTime))
+        val compareEndTime = (appEndTime?.compareTo(availableEndTime))
 
-            if(compareStartTime!!>=0&&compareEndTime!!<=0) {
-                return true
-            }
+        if(compareStartTime!!>=0&&compareEndTime!!<=0) {
+            return true
+        }
         return false
     }
 
@@ -453,14 +661,47 @@ class Create_Appointment:AppCompatActivity() {
                 "patient_ID" to patientID,
                 "schedule_ID" to scheduleID
             )
+            val appMapP = hashMapOf(
+                "appointment_ID" to appID,
+                "appointment_status" to "Pending",
+                "appointment_date" to appDate,
+                "appointment_start_time" to appStartTime,
+                "appointment_end_time" to appEndTime,
+                "appointment_service" to service,
+                "appointment_cancel_reason" to "",
+                "room_ID" to "",
+                "patient_ID" to patientID,
+                "schedule_ID" to scheduleID
+            )
 
-            db.collection("Appointment").document(appID)
-                .set(appMap)
-                .addOnSuccessListener { Log.d(Create_Appointment.TAG, "Success add appointment")
-                finish()
+
+
+            if(sp_role=="Doctor"||sp_role=="Assistant"){
+                db.collection("Appointment").document(appID)
+                    .set(appMap)
+                    .addOnSuccessListener { Log.d(Create_Appointment.TAG, "Success add appointment")
+                        //finish()
+                        val intent = Intent(this, Appointment_List::class.java)
+                        intent.putExtra("msgPatientID", patientID)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
 //                    val updateSchedule
-                }
-                .addOnFailureListener { e -> Log.w(Create_Appointment.TAG, "failed create app") }
+                    }
+                    .addOnFailureListener { e -> Log.w(Create_Appointment.TAG, "failed create app") }
+            }else{
+                Log.d(TAG, "pat id :"+patientID)
+                db.collection("Appointment").document(appID)
+                    .set(appMapP)
+                    .addOnSuccessListener { Log.d(Create_Appointment.TAG, "Success add appointment")
+                        //finish()
+                        Log.d(TAG, "pat id :"+patientID)
+                        val intent = Intent(this, Appointment_List::class.java)
+                        //intent.putExtra("msgPatientID", patientID)
+                        startActivity(intent)
+                    }
+                    .addOnFailureListener { e -> Log.w(Create_Appointment.TAG, "failed create app") }
+            }
+
 
         }
 
