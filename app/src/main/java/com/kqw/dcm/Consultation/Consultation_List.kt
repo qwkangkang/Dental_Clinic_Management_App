@@ -3,10 +3,12 @@ package com.kqw.dcm.Consultation
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.PopupMenu
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,21 +19,20 @@ import com.kqw.dcm.AccountSetting.Account_Setting
 import com.kqw.dcm.AccountSetting.Account_Setting_Clinic
 import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Appointment.Appointment_List
-import com.kqw.dcm.FAQ.FAQListAdapter
-import com.kqw.dcm.FAQ.FAQ_Data
-import com.kqw.dcm.FAQ.FAQ_List
 import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
-import com.kqw.dcm.schedule.Schedule
 import com.kqw.dcm.schedule.Schedule_List
+import kotlinx.android.synthetic.main.appointment_list.*
 import kotlinx.android.synthetic.main.consultation_list.*
 import kotlinx.android.synthetic.main.consultation_list.ibAdd
 import kotlinx.android.synthetic.main.faq_list.*
 import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.menu_bar_clinic.*
 import kotlinx.android.synthetic.main.title_bar.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class Consultation_List: AppCompatActivity () {
     companion object {
@@ -47,6 +48,7 @@ class Consultation_List: AppCompatActivity () {
     var sp_role = ""
     private lateinit var conList: ArrayList<Consultation_Data>
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.consultation_list)
@@ -61,7 +63,7 @@ class Consultation_List: AppCompatActivity () {
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
         sp_role = sharedPreferences.getString(ROLE_KEY, null)!!
-
+        val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
         if (sp_role == "Doctor" || sp_role == "Assistant") {
             mnPatientCon.visibility = View.INVISIBLE
@@ -94,14 +96,17 @@ class Consultation_List: AppCompatActivity () {
                                                     val conDate = con.get("consultation_date").toString()
                                                     val conTime = con.get("consultation_time").toString()
                                                     val conStatus = con.get("consultation_status").toString()
+
                                                     val con = Consultation_Data(conID, conQues, conDate, conTime, conStatus)
-                                                    Log.d(TAG, "con id=>"+conID)
-                                                    Log.d(TAG, "con ques=>"+conQues)
+
                                                     if (con != null) {
                                                         conList.add(con)
                                                     }
+                                                    val result = conList.sortedByDescending {
+                                                        LocalDate.parse(it.conDate, dateFormat)
+                                                    }
                                                     rvConsultation.adapter =
-                                                        ConsultationListAdapter(conList)
+                                                        ConsultationListAdapter(result)
                                                 }
                                             }
                                         }
@@ -127,14 +132,20 @@ class Consultation_List: AppCompatActivity () {
                                                         val conDate = con.get("consultation_date").toString()
                                                         val conTime = con.get("consultation_time").toString()
                                                         val conStatus = con.get("consultation_status").toString()
-                                                        val con = Consultation_Data(conID, conQues, conDate, conTime, conStatus)
-                                                        Log.d(TAG, "con id=>"+conID)
-                                                        Log.d(TAG, "con ques=>"+conQues)
-                                                        if (con != null) {
-                                                            conList.add(con)
+                                                        if(conStatus!="Solved"){
+                                                            val con = Consultation_Data(conID, conQues, conDate, conTime, conStatus)
+                                                            Log.d(TAG, "con id=>"+conID)
+                                                            Log.d(TAG, "con ques=>"+conQues)
+                                                            if (con != null) {
+                                                                conList.add(con)
+                                                            }
+                                                            val result = conList.sortedByDescending {
+                                                                LocalDate.parse(it.conDate, dateFormat)
+                                                            }
+                                                            rvConsultation.adapter =
+                                                                ConsultationListAdapter(result)
                                                         }
-                                                        rvConsultation.adapter =
-                                                            ConsultationListAdapter(conList)
+
                                                     }
                                                 }
                                             }

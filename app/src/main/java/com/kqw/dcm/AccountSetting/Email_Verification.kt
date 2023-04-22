@@ -45,7 +45,7 @@ class Email_Verification:AppCompatActivity() {
         //init setting
         ibProfile.setImageResource(R.drawable.user_orange)
         ibProfileC.setImageResource(R.drawable.user_orange)
-        tvTitle.text = "Reset Password"
+        tvTitle.text = getString(R.string.reset_password)
 
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, "")!!
@@ -69,9 +69,13 @@ class Email_Verification:AppCompatActivity() {
 
         //variables
         var otp:String?=null
+        var uid:String?=null
+        var email:String?=null
 
         bundle?.let {
             otp = bundle.getString("msgOTP")
+            uid = bundle.getString("msgUID")
+            email = bundle.getString("msgEmail")
         }
 
 
@@ -93,6 +97,8 @@ class Email_Verification:AppCompatActivity() {
 
             if(etOTP.text.toString()==otp){
                 val intent = Intent(this, Change_Pw::class.java)
+                intent.putExtra("msgUID", uid)
+                intent.putExtra("msgEMAIL", email)
                 startActivity(intent)
                 overridePendingTransition(0, 0)
             }else{

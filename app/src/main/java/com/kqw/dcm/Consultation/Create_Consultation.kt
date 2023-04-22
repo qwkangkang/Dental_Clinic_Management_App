@@ -17,20 +17,13 @@ import com.kqw.dcm.*
 import com.kqw.dcm.AccountSetting.Account_Setting
 import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Appointment.Appointment_List
-import com.kqw.dcm.FAQ.Create_FAQ
 import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
-import com.kqw.dcm.schedule.Schedule
 import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.create_consultation.*
 import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.title_bar.*
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -61,59 +54,49 @@ class Create_Consultation: AppCompatActivity() {
 
         //variables
         val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
-//        val getToday = LocalDateTime.now().plusHours(12).minusMinutes(8)
-        val getToday = LocalDateTime.now().plusHours(8)
-        val today = getToday.format(dateFormat)
-//        val currentTime = LocalDateTime.now().plusHours(8).format(timeFormat)
-        val currentTime = getToday.format(timeFormat)
-        val date  = ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("Asia/Kuala_Lumpur"))
-        //Log.d(TAG, "Zone date time: "+date.format(dateFormat))
+        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
 
+
+
+        var today: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
+        var ldToday: LocalDate = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalDate()
+        val ltNow:LocalTime = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalTime()
+        val strToday = ldToday.format(dateFormat)
+        val strNow = ltNow.format(timeFormat)
         btnSubmit.setOnClickListener {
-//            Log.d(TAG, "Zone date time: "+today)
-//            Log.d(TAG, "Zone time: "+currentTime)
-//            Log.d(TAG, "date:"+today)
-//            Log.d(TAG, "time:"+currentTime)
-
-            val dateF: DateFormat = SimpleDateFormat("hh:mm a")
-            val formatDate:String = dateF.format(Date()).toString()
-            Log.d(TAG, "try:"+today)
-            Log.d(TAG, "try:"+currentTime)
 
 
-//            val consultationQues = etConsultQues.text.toString().trim()
-//            db = FirebaseFirestore.getInstance()
-//            db.collection("Patient").get()
-//                .addOnSuccessListener {
-//                    if (!it.isEmpty) {
-//                        for (patient in it.documents) {
-//                            val userID = patient.get("user_ID").toString()
-//                            if (userID == sp_uid) {
-//                                val patientID = patient.get("patient_ID").toString()
-//                                val conID = db.collection("collection_name").document().id
-//                                val conMap = hashMapOf(
-//                                    "consultation_ID" to conID,
-//                                    "consultation_question" to consultationQues,
-//                                    "consultation_answer" to "",
-//                                    "consultation_status" to "Unsolved",
-//                                    "consultation_date" to today,
-//                                    "consultation_time" to currentTime,
-//                                    "patient_ID" to patientID,
-//                                    "doctor_ID" to ""
-//                                )
-//                                db.collection("Consultation").document(conID)
-//                                    .set(conMap)
-//                                    .addOnSuccessListener { Log.d(TAG, "Success") }
-//                                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
-////                                finish()
-//                                val intent = Intent(this, Consultation_List::class.java)
-//                                startActivity(intent)
-//                                overridePendingTransition(0, 0)
-//                            }
-//                        }
-//                    }
-//                }.addOnFailureListener { Log.d(TAG, "failed retrieve patient") }
+            val consultationQues = etConsultQues.text.toString().trim()
+            db = FirebaseFirestore.getInstance()
+            db.collection("Patient").get()
+                .addOnSuccessListener {
+                    if (!it.isEmpty) {
+                        for (patient in it.documents) {
+                            val userID = patient.get("user_ID").toString()
+                            if (userID == sp_uid) {
+                                val patientID = patient.get("patient_ID").toString()
+                                val conID = db.collection("collection_name").document().id
+                                val conMap = hashMapOf(
+                                    "consultation_ID" to conID,
+                                    "consultation_question" to consultationQues,
+                                    "consultation_answer" to "",
+                                    "consultation_status" to "Unsolved",
+                                    "consultation_date" to strToday,
+                                    "consultation_time" to strNow,
+                                    "patient_ID" to patientID,
+                                    "doctor_ID" to ""
+                                )
+                                db.collection("Consultation").document(conID)
+                                    .set(conMap)
+                                    .addOnSuccessListener { Log.d(TAG, "Success") }
+                                    .addOnFailureListener { e -> Log.w(TAG, "Error") }
+                                val intent = Intent(this, Consultation_List::class.java)
+                                startActivity(intent)
+                                overridePendingTransition(0, 0)
+                            }
+                        }
+                    }
+                }.addOnFailureListener { Log.d(TAG, "failed retrieve patient") }
         }
 
         btnLogout.setOnClickListener {

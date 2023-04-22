@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -46,10 +47,11 @@ class MainActivity_Clinic: AppCompatActivity() {
     var ROLE_KEY = "role"
     var sp_uid = ""
     var sp_role = ""
+
     @RequiresApi(Build.VERSION_CODES.O)
     val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     @RequiresApi(Build.VERSION_CODES.O)
-    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
+    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,14 +59,17 @@ class MainActivity_Clinic: AppCompatActivity() {
         setContentView(R.layout.activity_main_clinic)
         ibHomeC.setImageResource(R.drawable.home_orange)
 
+        //init
+//        tvViewMore.visibility = View.INVISIBLE
+//        tvViewMore2.visibility = View.INVISIBLE
+
         //variables
 
 
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
         sp_role = sharedPreferences.getString(ROLE_KEY, null)!!
-       // Toast.makeText(this, sp_role, Toast.LENGTH_SHORT).show()
-       // Log.d(Login.TAG, sp_role)
+
 
         //retrieve user's fname
         val ref = db.collection("User").document(sp_uid.toString())
@@ -76,8 +81,7 @@ class MainActivity_Clinic: AppCompatActivity() {
         }
 
         refreshQueueNo()
-
-
+        refreshPatientNo()
 
 
         //buttons to next activities
@@ -122,7 +126,7 @@ class MainActivity_Clinic: AppCompatActivity() {
 
         //menu bar button
         ibHomeC.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MainActivity_Clinic::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
         }
@@ -143,7 +147,6 @@ class MainActivity_Clinic: AppCompatActivity() {
             startActivity(intent)
             overridePendingTransition(0, 0)
         }
-
     }
     var handler: Handler = Handler()
     var runnable: Runnable? = null
@@ -152,13 +155,8 @@ class MainActivity_Clinic: AppCompatActivity() {
     override fun onResume() {
         handler.postDelayed(Runnable {
             handler.postDelayed(runnable!!, delay)
-//            Toast.makeText(
-//                this, "This method is run every 10 seconds",
-//                Toast.LENGTH_SHORT
-//            ).show()
             refreshQueueNo()
-
-
+            refreshPatientNo()
         }.also { runnable = it }, delay)
         super.onResume()
     }
@@ -197,6 +195,19 @@ class MainActivity_Clinic: AppCompatActivity() {
                     tvQueueNoC.text = queueNo.toString()
                 }
             }.addOnFailureListener { Log.d(TAG, "failed retrieve checkin") }
+    }
+
+    private fun refreshPatientNo() {
+        var patientNo:Int=0
+        db.collection("Patient").get()
+            .addOnSuccessListener {
+                if (!it.isEmpty) {
+                    for (patient in it.documents) {
+                        patientNo++
+                    }
+                    tvPatientDetail.text = "There are total of "+ patientNo.toString()+" patient(s) records currently"
+                }
+            }.addOnFailureListener { Log.d(TAG, "failed to retrieve patient") }
     }
 
     override fun onPause() {

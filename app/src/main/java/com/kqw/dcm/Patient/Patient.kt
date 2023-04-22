@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kqw.dcm.AccountSetting.Account_Setting
+import com.kqw.dcm.AccountSetting.Account_Setting_Clinic
 import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Appointment.Appointment_List
 import com.kqw.dcm.Consultation.Consultation_List
@@ -155,7 +156,7 @@ class Patient : AppCompatActivity(){
         }
 
         ibProfileC.setOnClickListener {
-            val intent = Intent(this, Account_Setting::class.java)
+            val intent = Intent(this, Account_Setting_Clinic::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
         }

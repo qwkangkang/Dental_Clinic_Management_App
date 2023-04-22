@@ -16,7 +16,7 @@ import com.kqw.dcm.FAQ.FAQListAdapter
 import com.kqw.dcm.R
 import kotlinx.android.synthetic.main.faq_list_item.view.*
 
-class ConsultationListAdapter(private val conList: ArrayList<Consultation_Data>): RecyclerView.Adapter<ConsultationListAdapter.ConsultationViewHolder>() {
+class ConsultationListAdapter(private val conList: List<Consultation_Data>): RecyclerView.Adapter<ConsultationListAdapter.ConsultationViewHolder>() {
     companion object{
         val TAG:String = ConsultationListAdapter::class.java.simpleName
     }

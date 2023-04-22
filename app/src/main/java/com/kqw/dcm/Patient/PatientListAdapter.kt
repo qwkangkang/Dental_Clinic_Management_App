@@ -26,26 +26,9 @@ class PatientListAdapter(private val patientList: ArrayList<Patient_Data>): Recy
         val tvAge : TextView = itemView.findViewById(R.id.tvAge)
         val tvContactNo: TextView = itemView.findViewById(R.id.tvContact)
 
-        private var selectedPatient:Patient_Data? = null
-        private var currentPosition:Int = 0
+//        private var selectedPatient:Patient_Data? = null
+//        private var currentPosition:Int = 0
 
-//        init {
-//            itemView.setOnClickListener{
-//                if(selectedPatient==null){
-//                    Log.d(PatientListAdapter.TAG, "null")
-//                }else {
-//                    Log.d(PatientListAdapter.TAG, selectedPatient!!.patientName + "clicked")
-//                    selectedPatient?.let {
-//                        Toast.makeText(
-//                            itemView.context,
-//                            selectedPatient!!.patientID + " is selected",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                        Log.d(PatientListAdapter.TAG, selectedPatient!!.patientID + " is selected")
-//                    }
-//                }
-//            }
-//        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientViewHolder {
@@ -73,7 +56,4 @@ class PatientListAdapter(private val patientList: ArrayList<Patient_Data>): Recy
         return patientList.size
     }
 
-    fun refreshDataSet(){
-
-    }
 }

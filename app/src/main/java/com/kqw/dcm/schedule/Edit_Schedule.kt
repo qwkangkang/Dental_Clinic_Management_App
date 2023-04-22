@@ -88,9 +88,14 @@ class Edit_Schedule: AppCompatActivity() {
 
 
         val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
-        val today = LocalDateTime.now().format(dateFormat)
-        etDateEditSchedule.setText(today)
+        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
+//        val today = LocalDateTime.now().format(dateFormat)
+        var today: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
+        var ldToday: LocalDate = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalDate()
+        val ltNow:LocalTime = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalTime()
+        val strToday = ldToday.format(dateFormat)
+
+        etDateEditSchedule.setText(strToday)
         ddlStartTime.setText(adapterItems2.getItem(0), false)
         ddlEndTime.setText(adapterItems2.getItem(0), false)
         ddlStatus.setText(adapterItems.getItem(0), false)
@@ -128,9 +133,6 @@ class Edit_Schedule: AppCompatActivity() {
                     }
 
 
-
-
-
         btnLogout.setOnClickListener {
             val editor: SharedPreferences.Editor = sharedPreferences.edit()
             editor.clear()
@@ -157,9 +159,7 @@ class Edit_Schedule: AppCompatActivity() {
                         etDateEditSchedule.setText("" + mDay + "-" + (mMonth + 1) + "-" + mYear)
                     }
                 }
-
                 selectedDate = LocalDate.parse(etDateEditSchedule.text.toString(), dateFormat)
-                Log.d(Edit_Schedule.TAG, "date selected=>"+selectedDate)
             },year, month, day)
             dpd.show()
         }

@@ -36,10 +36,10 @@
 
     <ImageButton
         android:id="@+id/ibLogout"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="7dp"
-        android:layout_marginEnd="7dp"
+        android:layout_width="45dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="0dp"
         android:background="#00000000"
         android:padding="5dp"
         android:scaleType="fitCenter"
@@ -119,10 +119,10 @@
                 android:textColor="@color/black"/>
 
             <TextView
-                android:id="@+id/tvAppDetail"
+                android:id="@+id/tvAppDetailP"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Dr. Joseph\n30 Dec  2:00pm"
+                android:text=""
                 android:layout_marginTop="25dp"
                 android:textSize="15sp"
                 android:textColor="@color/black"/>
@@ -139,6 +139,16 @@
                 android:scaleType="fitCenter"
                 android:layout_gravity="right"
                 tools:ignore="RtlHardcoded" />
+
+            <TextView
+                android:id="@+id/tvViewMore2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View More"
+                android:layout_marginTop="60dp"
+                android:textSize="15sp"
+                android:textColor="@color/black"
+                />
 
         </androidx.cardview.widget.CardView>
 
@@ -164,7 +174,7 @@
                 android:id="@+id/tvTreatmentDetail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2 Nov\tScaling"
+                android:text=""
                 android:layout_marginTop="25dp"
                 android:textSize="15sp"
                 android:textColor="@color/black"/>

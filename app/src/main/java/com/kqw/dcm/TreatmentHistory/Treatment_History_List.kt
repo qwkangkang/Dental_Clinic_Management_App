@@ -3,10 +3,13 @@ package com.kqw.dcm.TreatmentHistory
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.PopupMenu
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,13 +20,9 @@ import com.kqw.dcm.Appointment.Appointment_List
 import com.kqw.dcm.Consultation.Consultation_List
 import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.AccountSetting.Login
-import com.kqw.dcm.Appointment.AppointmentListAdapter
-import com.kqw.dcm.Appointment.Appointment_Data
-import com.kqw.dcm.Consultation.Consultation_Data
 import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.R
-import com.kqw.dcm.schedule.Schedule
 import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.appointment_list.*
 import kotlinx.android.synthetic.main.consultation_list.*
@@ -31,6 +30,8 @@ import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.menu_bar_clinic.*
 import kotlinx.android.synthetic.main.title_bar.*
 import kotlinx.android.synthetic.main.treatment_history_list.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 class Treatment_History_List: AppCompatActivity() {
@@ -46,6 +47,7 @@ class Treatment_History_List: AppCompatActivity() {
     var sp_role = ""
     private lateinit var treatmentList: ArrayList<Treatment_Data>
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.treatment_history_list)
@@ -62,6 +64,7 @@ class Treatment_History_List: AppCompatActivity() {
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
         sp_role = sharedPreferences.getString(ROLE_KEY, null)!!
+        val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
 
         if (sp_role == "Doctor" || sp_role == "Assistant") {
@@ -108,16 +111,6 @@ class Treatment_History_List: AppCompatActivity() {
 
         db = FirebaseFirestore.getInstance()
 
-//        if(sp_role=="Patient"){
-//            db.collection("Patient").get()
-//                .addOnSuccessListener {
-//                    if (!it.isEmpty) {
-//                        for (patient in it.documents) {
-//                            val userID = patient.get("user_ID").toString()
-//                            if (userID == sp_uid) {
-//                                if(patientID==patient.get("patient_ID").toString()){
-//
-//                                }
 
         if(sp_role=="Doctor"||sp_role=="Assistant"){
             db.collection("Treatment").get()
@@ -153,7 +146,6 @@ class Treatment_History_List: AppCompatActivity() {
                                                     treatmentName,
                                                     treatmentDate,
                                                     treatmentTime,
-                                                    treatmentPatientID,
                                                     treatmentRemark,
                                                     treatmentPres,
                                                     treatmentDetail
@@ -162,8 +154,11 @@ class Treatment_History_List: AppCompatActivity() {
                                                 if (treatment != null) {
                                                     treatmentList.add(treatment)
                                                 }
+                                                val result = treatmentList.sortedByDescending {
+                                                    LocalDate.parse(it.treatmentDate, dateFormat)
+                                                }
                                                 rvTreatment.adapter =
-                                                    TreatmentListAdapter(treatmentList)
+                                                    TreatmentListAdapter(result)
                                             }
                                         }.addOnFailureListener { Log.d(TAG, "failed retrieve user") }
                                     }
@@ -230,7 +225,6 @@ class Treatment_History_List: AppCompatActivity() {
                                                                         treatmentName,
                                                                         treatmentDate,
                                                                         treatmentTime,
-                                                                        treatmentPatientID,
                                                                         treatmentRemark,
                                                                         treatmentPres,
                                                                         treatmentDetail
@@ -239,10 +233,11 @@ class Treatment_History_List: AppCompatActivity() {
                                                                     if (treatment != null) {
                                                                         treatmentList.add(treatment)
                                                                     }
+                                                                    val result = treatmentList.sortedByDescending {
+                                                                        LocalDate.parse(it.treatmentDate, dateFormat)
+                                                                    }
                                                                     rvTreatment.adapter =
-                                                                        TreatmentListAdapter(
-                                                                            treatmentList
-                                                                        )
+                                                                        TreatmentListAdapter(result)
                                                                 }
                                                             }.addOnFailureListener {
                                                                 Log.d(
@@ -274,14 +269,6 @@ class Treatment_History_List: AppCompatActivity() {
         }
 
 
-
-        btnAddTreatment.setOnClickListener {
-            val intent = Intent(this, ViewNCreate_Treatment_History::class.java)
-            startActivity(intent)
-            intent.putExtra("msgPatientID", patientID)
-            overridePendingTransition(0, 0)
-        }
-
         btnLogout.setOnClickListener{
             val editor: SharedPreferences.Editor = sharedPreferences.edit()
             editor.clear()
@@ -296,10 +283,16 @@ class Treatment_History_List: AppCompatActivity() {
         }
 
         btnAddTreatment.setOnClickListener {
-            val intent = Intent(this, ViewNCreate_Treatment_History::class.java)
-            intent.putExtra("msgPatientID", patientID)
-            startActivity(intent)
-            overridePendingTransition(0, 0)
+            Log.d(TAG, "id is "+patientID)
+            if(sp_role=="Doctor"){
+                val intent = Intent(this, ViewNCreate_Treatment_History::class.java)
+                intent.putExtra("msgPatientID", patientID)
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+            }
+            else if(sp_role=="Assistant"){
+                Toast.makeText(this, "Only Doctors Can Add Treatment History", Toast.LENGTH_SHORT).show()
+            }
         }
 
         //menu bar button

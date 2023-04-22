@@ -3,6 +3,7 @@ package com.kqw.dcm.AccountSetting
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -22,11 +23,15 @@ import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.R
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule_List
+import com.scottyab.aescrypt.AESCrypt
 import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.menu_bar_clinic.*
+import kotlinx.android.synthetic.main.register.*
 import kotlinx.android.synthetic.main.reset_password.*
 import kotlinx.android.synthetic.main.title_bar.*
+import kotlinx.android.synthetic.main.title_bar.tvTitle
 import kotlinx.android.synthetic.main.view_treatment.*
+import java.security.GeneralSecurityException
 import java.util.*
 
 
@@ -50,7 +55,7 @@ class Reset_Pw:AppCompatActivity() {
         //init setting
         ibProfile.setImageResource(R.drawable.user_orange)
         ibProfileC.setImageResource(R.drawable.user_orange)
-        tvTitle.text = "Verify Password"
+        tvTitle.text = getString(R.string.verify_password)
 
 
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
@@ -89,10 +94,18 @@ class Reset_Pw:AppCompatActivity() {
             overridePendingTransition(0, 0)
         }
         btnContinue.setOnClickListener {
-
             var inputPw:String?=null
             inputPw=etCurrentPw.text.toString()
-            if(inputPw==currentPw){
+
+            val key = "passwordKey"
+            var passwordAfterDecrypt:String?=null
+            try {
+                passwordAfterDecrypt = AESCrypt.decrypt(key, currentPw)
+            } catch (e: GeneralSecurityException) {
+                Log.d(Login.TAG, "decryption failed")
+            }
+
+            if(inputPw==passwordAfterDecrypt){
                 val intent = Intent(this, Change_Pw::class.java)
                 startActivity(intent)
                 overridePendingTransition(0, 0)
@@ -102,17 +115,13 @@ class Reset_Pw:AppCompatActivity() {
 
         }
         tvForgotPassword.setOnClickListener{
-
-            Log.d(TAG, "email is=>"+email)
-            val webAddress : String? = ""
+            tvForgotPassword.setTextColor(Color.parseColor("#FE8800"))
             var code:Int
             var random:Random = Random()
             code = random.nextInt(8999)+1000
-           // var url = "https://www.google.com"
             var requestQueue :RequestQueue = Volley.newRequestQueue(applicationContext)
 
-//            http://infinityqw.rf.gd/sendEmail.php
-            //https://infinityqw.000webhostapp.com/sendEmail.php
+
             var stringRequest:StringRequest =  object:StringRequest(Method.POST, "https://infinityqw.000webhostapp.com/sendEmail.php",
                 Response.Listener{ response->
                     Toast.makeText(this, ""+response, Toast.LENGTH_SHORT).show()

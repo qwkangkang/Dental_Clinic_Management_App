@@ -3,4 +3,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="required">Required</string>
+    <string name="account_setting">Account Setting</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="verify_password">Verify Password</string>
 </resources>

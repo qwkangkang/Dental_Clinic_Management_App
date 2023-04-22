@@ -6,62 +6,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#EEF0F4">
 
-<!--    <androidx.cardview.widget.CardView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:backgroundTint="#00000000"-->
-<!--        app:cardElevation="0dp">-->
-<!--        <LinearLayout-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:orientation="horizontal">-->
-<!--            <Space-->
-<!--                android:layout_width="50dp"-->
-<!--                android:layout_height="50dp"-->
-<!--                android:layout_gravity="left"/>-->
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:orientation="vertical"-->
-<!--                android:gravity="center"-->
-<!--                android:layout_weight="1"-->
-<!--                android:textColor="@color/black"-->
-<!--                android:paddingTop="2dp">-->
-<!--                <TextView-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:id="@+id/tvTitle"-->
-<!--                    android:text="Treatment History"-->
-<!--                    android:textSize="30sp"-->
-<!--                    android:gravity="center"-->
-<!--                    android:layout_weight="1"-->
-<!--                    android:textColor="@color/black"-->
-<!--                    android:paddingTop="2dp"/>-->
-<!--                <TextView-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:id="@+id/tvPatientName"-->
-<!--                    android:text=""-->
-<!--                    android:gravity="center"-->
-<!--                    android:textColor="@color/black"-->
-<!--                    android:textSize="20sp"/>-->
-<!--            </LinearLayout>-->
-
-
-<!--            <ImageButton-->
-<!--                android:id="@+id/btnLogout"-->
-<!--                android:layout_width="45dp"-->
-<!--                android:layout_height="50dp"-->
-<!--                app:srcCompat="@drawable/log_out"-->
-<!--                android:layout_gravity="right"-->
-<!--                android:background="#00000000"-->
-<!--                android:padding="5dp"-->
-<!--                android:scaleType="fitCenter"-->
-<!--                android:layout_marginTop="5dp"-->
-<!--                tools:ignore="RtlHardcoded"/>-->
-
-<!--        </LinearLayout>-->
-<!--    </androidx.cardview.widget.CardView>-->
     <include layout="@layout/title_bar"/>
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"

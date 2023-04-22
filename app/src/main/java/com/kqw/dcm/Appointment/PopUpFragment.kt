@@ -1,5 +1,6 @@
 package com.kqw.dcm.Appointment
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.R
 import kotlinx.android.synthetic.main.fragment_pop_up.*
 import kotlinx.android.synthetic.main.fragment_pop_up.view.*
@@ -43,6 +45,8 @@ class PopUpFragment : DialogFragment() {
             )
 
             db.collection("Appointment").document(appID).update(updateAppMap)
+            val intent = Intent(this.context, Appointment_List::class.java)
+            startActivity(intent)
             dismiss()
         }
 

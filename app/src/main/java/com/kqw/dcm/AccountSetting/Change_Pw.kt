@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -18,6 +19,7 @@ import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule_List
+import com.scottyab.aescrypt.AESCrypt
 import kotlinx.android.synthetic.main.change_password.*
 import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.menu_bar_clinic.*
@@ -26,6 +28,7 @@ import kotlinx.android.synthetic.main.reset_password.*
 import kotlinx.android.synthetic.main.title_bar.btnBack
 import kotlinx.android.synthetic.main.title_bar.btnLogout
 import kotlinx.android.synthetic.main.title_bar.tvTitle
+import java.security.GeneralSecurityException
 
 class Change_Pw:AppCompatActivity() {
     companion object{
@@ -47,7 +50,7 @@ class Change_Pw:AppCompatActivity() {
         //init setting
         ibProfile.setImageResource(R.drawable.user_orange)
         ibProfileC.setImageResource(R.drawable.user_orange)
-        tvTitle.text = "Reset Password"
+        tvTitle.text = getString(R.string.reset_password)
 
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, "")!!
@@ -63,8 +66,14 @@ class Change_Pw:AppCompatActivity() {
             mnClinicChangePw.visibility = View.INVISIBLE
         }
 
+        val bundle: Bundle? = intent.extras
+        var uid:String?=null
+        var email:String?=null
 
-
+        bundle?.let {
+            uid = bundle.getString("msgUID")
+            email = bundle.getString("msgEMAIL")
+        }
 
         btnLogout.setOnClickListener {
             val editor:SharedPreferences.Editor = sharedPreferences.edit()
@@ -83,22 +92,53 @@ class Change_Pw:AppCompatActivity() {
             tilPasswordChangePw.helperText = validPassword()
 
             if(tilPasswordChangePw.helperText==null){
+                var inputPassword:String?=null
+                inputPassword = etNewPw.text.toString().trim()
+
+                val key = "passwordKey"
+                var encryptedPassword:String?=null
+                try {
+                    encryptedPassword = AESCrypt.encrypt(key, inputPassword)
+                } catch (e: GeneralSecurityException) {
+                    Log.d(Register.TAG, "password encrypted failed")
+                }
 
                 val updateUserMap = mapOf(
-                    "user_password" to etNewPw.text.toString().trim()
+                    "user_password" to encryptedPassword
                 )
-                db.collection("User").document(sp_uid).update(updateUserMap)
-                Toast.makeText(this, "Password Has Been Changed", Toast.LENGTH_SHORT).show()
-                if(sp_role=="Doctor"||sp_role=="Assistant"){
-                    val intent = Intent(this, Account_Setting_Clinic::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0, 0)
+
+                if(sp_uid!=""){
+                    db.collection("User").document(sp_uid).update(updateUserMap)
+                    Toast.makeText(this, "Password Has Been Changed", Toast.LENGTH_SHORT).show()
+                    if(sp_role=="Doctor"||sp_role=="Assistant"){
+                        val intent = Intent(this, Account_Setting_Clinic::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                    }
+                    else if(sp_role=="Patient"){
+                        val intent = Intent(this, Account_Setting::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                    }
                 }
-                else if(sp_role=="Patient"){
-                    val intent = Intent(this, Account_Setting::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0, 0)
-                }else{
+                else{
+                    Log.d(TAG, "uid is " + uid)
+                    db.collection("User").document(uid.toString()).update(updateUserMap)
+                    //alternatively
+//                    db.collection("User")
+//                        .whereEqualTo("user_email", email)
+//                        .limit(1)
+//                        .get()
+//                        .addOnSuccessListener { documents ->
+//                            for (document in documents) {
+//                                db.collection("User").document(document.id).update(updateUserMap)
+//                            }
+//
+//                        }
+//                        .addOnFailureListener {
+//                            Log.d(TAG, "error saving updateUserMap")
+//                        }
+                    Toast.makeText(this, "Password Has Been Changed. Please Login First", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, Login::class.java)
                     startActivity(intent)
                     overridePendingTransition(0, 0)

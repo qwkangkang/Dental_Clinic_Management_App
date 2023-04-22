@@ -3,22 +3,29 @@ package com.kqw.dcm.AccountSetting
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.text.InputType
-import android.text.TextUtils
 import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
+import com.android.volley.AuthFailureError
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kqw.dcm.R
+import com.scottyab.aescrypt.AESCrypt
 import kotlinx.android.synthetic.main.login.*
 import kotlinx.android.synthetic.main.register.*
 import kotlinx.android.synthetic.main.register.etEmail
 import kotlinx.android.synthetic.main.register.etPassword
 import kotlinx.android.synthetic.main.register.tilEmail
 import kotlinx.android.synthetic.main.register.tilPassword
+import java.security.GeneralSecurityException
+import java.util.HashMap
+
 
 class Register : AppCompatActivity() {
 
@@ -27,14 +34,19 @@ class Register : AppCompatActivity() {
     }
 
     private var db = Firebase.firestore
-
+    override fun onResume() {
+        super.onResume()
+        tvSignUpAsDoc.setTextColor(Color.parseColor("#000000"))
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.register)
 
+        //int setting
+        tvSignUpAsDoc.setTextColor(Color.parseColor("#000000"))
+
         //variables
-        var valid: Boolean = true
-        var role:String?="Patient"
+        val role:String="Patient"
         var fname:String?=null
         var lname:String?=null
         var email:String?=null
@@ -60,8 +72,6 @@ class Register : AppCompatActivity() {
             else if (radFemale.isChecked)
                 gender="Female"
 
-
-//            contactNoFocusListener()
             tilFName.helperText = validFName()
             tilLName.helperText = validLName()
             tilEmail.helperText = validEmail()
@@ -74,9 +84,6 @@ class Register : AppCompatActivity() {
             if(tilFName.helperText==null && tilLName.helperText==null && tilEmail.helperText==null &&
                 tilContact.helperText==null && tilIC.helperText==null && tilPassword.helperText==null &&
                 tilCPassword.helperText==null && tilAddress.helperText==null) {
-                //Toast.makeText(this, "validation pass", Toast.LENGTH_SHORT).show()
-
-//                val userID = FirebaseAuth.getInstance().currentUser!!.uid
                 var emailFound:Boolean=false
                 val email = etEmail.text.toString().trim()
                 db.collection("User").get()
@@ -93,6 +100,14 @@ class Register : AppCompatActivity() {
                                 Toast.makeText(this, "This Email Has Been Registered", Toast.LENGTH_SHORT).show()
                             }
                             else{
+                                val key = "passwordKey"
+                                var encryptedPassword:String?=null
+                                try {
+                                    encryptedPassword = AESCrypt.encrypt(key, password)
+                                } catch (e: GeneralSecurityException) {
+                                    Log.d(TAG, "password encrypted failed")
+                                }
+
                                 val id = db.collection("collection_name").document().id
 
                                 val userMap = hashMapOf(
@@ -101,7 +116,7 @@ class Register : AppCompatActivity() {
                                     "user_last_name" to lname,
                                     "user_email" to email,
                                     "user_role" to role,
-                                    "user_password" to password,
+                                    "user_password" to encryptedPassword,
                                     "user_phone" to contactNo,
                                     "user_IC_no" to IC,
                                     "user_gender" to gender
@@ -124,7 +139,8 @@ class Register : AppCompatActivity() {
                                     .set(patientMap)
                                     .addOnSuccessListener { Log.d(TAG, "Success") }
                                     .addOnFailureListener { e -> Log.w(TAG, "Error") }
-                                Log.d(TAG, "Register Successful. Please Login First")
+                                sendEmail()
+                                Toast.makeText(this, "Register Successful. Please Login First", Toast.LENGTH_SHORT).show()
                                 finish()
                             }
                         }
@@ -145,29 +161,48 @@ class Register : AppCompatActivity() {
         }
     }
 
+    private fun sendEmail() {
+        val requestQueue : RequestQueue = Volley.newRequestQueue(applicationContext)
 
-    private fun contactNoFocusListener(){
-       // Toast.makeText(this, validContactNo(), Toast.LENGTH_SHORT).show()
-//        tilContact.setOnFocusChangeListener { _, focused ->
-//            if(!focused){
-////                val x:String? = validContactNo()
-//                Toast.makeText(this, "byebye", Toast.LENGTH_SHORT).show()
-//                tilContact.helperText = validContactNo()
-//            }
-//        }
-        tilContact.helperText = validContactNo()
-//        etContact.setOnFocusChangeListener { _, hasFocus ->
-//            if(!hasFocus) {
-//                Toast.makeText(this, "byebye", Toast.LENGTH_SHORT).show()
-//                tilContact.helperText = validContactNo()
-//            }
-//        }
+        val stringRequest: StringRequest =  object: StringRequest(
+            Method.POST, "https://infinityqw.000webhostapp.com/SendEmailRegister.php",
+            Response.Listener{ response->
+                Toast.makeText(this, ""+response, Toast.LENGTH_SHORT).show()
+                Log.d(Reset_Pw.TAG, response)
+            },
+            Response.ErrorListener{ error ->
+                Toast.makeText(this, ""+error, Toast.LENGTH_SHORT).show()
+                Log.d(Reset_Pw.TAG, error.toString())
+            })
+        {
+            override fun getParams(): Map<String, String> {
+                val params: MutableMap<String, String> = HashMap()
+                params["email"] = etEmail.text.toString()
+                params["fname"] = etFName.text.toString()
+                return params
+            }
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                val params: MutableMap<String, String> = HashMap()
+                params["Content-Type"] = "application/x-www-form-urlencoded"
+                return params
+            }
+        }
+        stringRequest.retryPolicy = DefaultRetryPolicy(
+            10000,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+
+        requestQueue.add(stringRequest)
     }
+
+
 
     private fun validFName():String?{
         val fname = etFName.text.toString().trim()
 
-        if(fname!!.isEmpty()){
+        if(fname.isEmpty()){
             return "First Name Required"
         }
         return null
@@ -176,7 +211,7 @@ class Register : AppCompatActivity() {
     private fun validLName():String?{
         val lname = etLName.text.toString().trim()
 
-        if(lname!!.isEmpty()){
+        if(lname.isEmpty()){
             return "Last Name Required"
         }
         return null
@@ -185,7 +220,7 @@ class Register : AppCompatActivity() {
     private fun validEmail():String?{
         val email = etEmail.text.toString().trim()
 
-        if(email!!.isEmpty()){
+        if(email.isEmpty()){
             return "Email Required"
         }
         if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -198,13 +233,13 @@ class Register : AppCompatActivity() {
     private fun validContactNo():String?{
         val contactNo = etContact.text.toString().trim()
 
-        if(contactNo!!.isEmpty()){
+        if(contactNo.isEmpty()){
             return "Contact No. Required"
         }
-        if(!contactNo!!.matches(".*[0-9].*".toRegex())){
+        if(!contactNo.matches(".*[0-9].*".toRegex())){
             return "Must Be Digits"
         }
-        if((contactNo!!.length) != 10 && (contactNo!!.length) != 11){
+        if((contactNo.length) != 10 && (contactNo.length) != 11){
             return "Must Be 10 or 11 Digits"
         }
         return null
@@ -213,34 +248,32 @@ class Register : AppCompatActivity() {
     private fun validIC():String?{
         val IC = etIC.text.toString().trim()
 
-        if(IC!!.isEmpty()){
+        if(IC.isEmpty()){
             return "IC No. Required"
         }
-        if(!IC!!.matches(".*[0-9]{6}-[0-9]{2}-[0-9]{4}.*".toRegex())||IC!!.length!=14){
+        if(!IC.matches(".*[0-9]{6}-[0-9]{2}-[0-9]{4}.*".toRegex())||IC.length!=14){
             return "Invalid IC No. Format"
         }
-//        if(IC!!.length!=14 ){
-//            return "Invalid IC No. Format"
-//        }
+
         return null
     }
 
     private fun validPassword():String?{
         val password = etPassword.text.toString().trim()
 
-        if(password!!.isEmpty()){
+        if(password.isEmpty()){
             return "Password Required"
         }
-        if(password!!.length<8){
+        if(password.length<8){
             return "Minimum 8 Character Password"
         }
-        if(!password!!.matches(".*[A-Z].*".toRegex())){
+        if(!password.matches(".*[A-Z].*".toRegex())){
             return "Must Contain 1 Upper-case Character"
         }
-        if(!password!!.matches(".*[a-z].*".toRegex())){
+        if(!password.matches(".*[a-z].*".toRegex())){
             return "Must Contain 1 Lower-case Character"
         }
-        if(!password!!.matches(".*[@#\$%^&+=].*".toRegex())) {
+        if(!password.matches(".*[@#\$%^&+=].*".toRegex())) {
             return "Must Contain 1 Special Character (@#\$%^&+=)"
         }
         return null
@@ -250,7 +283,7 @@ class Register : AppCompatActivity() {
         val confirmPassword = etCPassword.text.toString().trim()
         val password = etPassword.text.toString().trim()
 
-        if(confirmPassword!!.isEmpty()){
+        if(confirmPassword.isEmpty()){
             return "Confirm Password Required"
         }
         if(confirmPassword!=password){
@@ -262,7 +295,7 @@ class Register : AppCompatActivity() {
     private fun validAddress():String?{
         val address = etAddress.text.toString().trim()
 
-        if(address!!.isEmpty()){
+        if(address.isEmpty()){
             return "Address Required"
         }
         return null

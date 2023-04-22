@@ -6,7 +6,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
-import android.view.View
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,7 +18,6 @@ import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.account_setting.*
-import kotlinx.android.synthetic.main.acount_setting_clinic.*
 import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.title_bar.*
 
@@ -42,7 +40,7 @@ class Account_Setting: AppCompatActivity() {
 
         //init setting
         ibProfile.setImageResource(R.drawable.user_orange)
-        tvTitle.text = "Account Setting"
+        tvTitle.text = getString(R.string.account_setting)
 
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
@@ -92,14 +90,14 @@ class Account_Setting: AppCompatActivity() {
                             }
                         }.addOnFailureListener {
                             Log.d(
-                                Account_Setting.TAG,
+                                TAG,
                                 "failed retrieve patient"
                             )
                         }
 
                 }
             }
-        }.addOnFailureListener { Log.d(Account_Setting.TAG, "failed retrieve user") }
+        }.addOnFailureListener { Log.d(TAG, "failed retrieve user") }
 
         btnLogout.setOnClickListener {
             val editor:SharedPreferences.Editor = sharedPreferences.edit()
@@ -129,7 +127,7 @@ class Account_Setting: AppCompatActivity() {
             if (tilFNameAcc.helperText == null && tilLNameAcc.helperText == null && tilEmailAcc.helperText == null &&
                 tilContactAcc.helperText == null && tilICAcc.helperText == null && tilAddressAcc.helperText == null
             ) {
-                var gender:String?=null
+                var gender: String?
                 if(radMaleAcc.isChecked){
                     gender="Male"
                 }else{
@@ -213,7 +211,7 @@ class Account_Setting: AppCompatActivity() {
     private fun validFName():String?{
         val fname = etFNameAcc.text.toString().trim()
 
-        if(fname!!.isEmpty()){
+        if(fname.isEmpty()){
             return "First Name Required"
         }
         return null
@@ -222,7 +220,7 @@ class Account_Setting: AppCompatActivity() {
     private fun validLName():String?{
         val lname = etLNameAcc.text.toString().trim()
 
-        if(lname!!.isEmpty()){
+        if(lname.isEmpty()){
             return "Last Name Required"
         }
         return null
@@ -231,7 +229,7 @@ class Account_Setting: AppCompatActivity() {
     private fun validEmail():String?{
         val email = etEmailAcc.text.toString().trim()
 
-        if(email!!.isEmpty()){
+        if(email.isEmpty()){
             return "Email Required"
         }
         if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -243,13 +241,13 @@ class Account_Setting: AppCompatActivity() {
     private fun validContactNo():String?{
         val contactNo = etContactAcc.text.toString().trim()
 
-        if(contactNo!!.isEmpty()){
+        if(contactNo.isEmpty()){
             return "Contact No. Required"
         }
-        if(!contactNo!!.matches(".*[0-9].*".toRegex())){
+        if(!contactNo.matches(".*[0-9].*".toRegex())){
             return "Must Be Digits"
         }
-        if((contactNo!!.length) != 10 && (contactNo!!.length) != 11){
+        if((contactNo.length) != 10 && (contactNo.length) != 11){
             return "Must Be 10 or 11 Digits"
         }
         return null
@@ -258,10 +256,10 @@ class Account_Setting: AppCompatActivity() {
     private fun validIC():String?{
         val IC = etICAcc.text.toString().trim()
 
-        if(IC!!.isEmpty()){
+        if(IC.isEmpty()){
             return "IC No. Required"
         }
-        if(!IC!!.matches(".*[0-9]{6}-[0-9]{2}-[0-9]{4}.*".toRegex())||IC!!.length!=14){
+        if(!IC.matches(".*[0-9]{6}-[0-9]{2}-[0-9]{4}.*".toRegex())||IC.length!=14){
             return "Invalid IC No. Format"
         }
         return null
@@ -270,7 +268,7 @@ class Account_Setting: AppCompatActivity() {
     private fun validAddress():String?{
         val address = etAddressAcc.text.toString().trim()
 
-        if(address!!.isEmpty()){
+        if(address.isEmpty()){
             return "Address Required"
         }
         return null

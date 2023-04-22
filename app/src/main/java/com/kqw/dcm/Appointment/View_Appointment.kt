@@ -86,13 +86,10 @@ class View_Appointment: AppCompatActivity() {
         adapterRoomItems = ArrayAdapter(this, R.layout.list_item_ddl, roomIDList)
         ddlRoomView.setAdapter(adapterRoomItems)
         val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
-//        val getToday = LocalDateTime.now().plusHours(9).minusMinutes(28)
-//        val today = getToday.format(dateFormat)
-//        val currentTime = getToday.format(timeFormat)
+        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
+
         var today: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
         var ldToday: LocalDate = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalDate()
-        Log.d(MainActivity_Clinic.TAG, "today is "+ldToday)
         val ltNow:LocalTime = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalTime()
         val strToday = ldToday.format(dateFormat)
         val strNow = ltNow.format(timeFormat)
@@ -218,9 +215,10 @@ class View_Appointment: AppCompatActivity() {
                 "appointment_status" to "Confirmed"
             )
             db.collection("Appointment").document(appID.toString()).update(updateAppointmentMap)
-            finish()
-            overridePendingTransition(0, 0)
-            startActivity(getIntent())
+            //finish()
+            //overridePendingTransition(0, 0)
+            val intent = Intent(this, Appointment_List::class.java)
+            startActivity(intent)
             overridePendingTransition(0, 0)
         }
 
@@ -237,12 +235,17 @@ class View_Appointment: AppCompatActivity() {
         }
 
         btnCheckInManual.setOnClickListener {
-            val timeAppTime = LocalTime.parse(appTime, timeFormat)
-            val timeCurrentTime = LocalTime.parse(strNow, timeFormat)
-            val compareAppTime = (timeAppTime?.compareTo(timeCurrentTime))
-            Log.d(TAG, timeAppTime.toString()+" vs "+timeCurrentTime.toString())
+            var today: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
+            var ldToday: LocalDate = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalDate()
+            var ltNow:LocalTime = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalTime()
+
+            var timeAppTime = LocalTime.parse(appTime, timeFormat)
+            var timeCurrentTime = LocalTime.parse(strNow, timeFormat)
+            timeAppTime = timeAppTime.minusMinutes(30)
+            val compareAppTime = (ltNow?.compareTo(timeAppTime))
+            Log.d(TAG, timeAppTime.toString()+" vs "+ltNow.toString())
             Log.d(TAG, " today date "+strToday.toString())
-            Log.d(TAG, " current time "+strNow.toString())
+            Log.d(TAG, " current time "+ltNow.toString())
             if(compareAppTime!!>=0&&appDate==strToday&&appStatus=="Confirmed") {
                 val updateAppMap = mapOf(
                     "appointment_status" to "Checked In"

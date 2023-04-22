@@ -3,13 +3,13 @@ package com.kqw.dcm.Appointment
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
-import android.widget.RelativeLayout
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -20,12 +20,8 @@ import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Consultation.Consultation_List
 import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.Home.MainActivity_Clinic
-import com.kqw.dcm.Patient.Patient
-import com.kqw.dcm.Patient.PatientListAdapter
-import com.kqw.dcm.Patient.Patient_Data
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
-import com.kqw.dcm.schedule.Schedule
 import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.appointment_list.*
 import kotlinx.android.synthetic.main.appointment_list.mnClinic
@@ -36,6 +32,8 @@ import kotlinx.android.synthetic.main.patient_list.*
 import kotlinx.android.synthetic.main.schedule.*
 import kotlinx.android.synthetic.main.title_bar.*
 import kotlinx.android.synthetic.main.treatment_history_list.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class Appointment_List: AppCompatActivity() {
     companion object {
@@ -51,13 +49,14 @@ class Appointment_List: AppCompatActivity() {
     var sp_role = ""
     private lateinit var appList: ArrayList<Appointment_Data>
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.appointment_list)
 
         //init setting
         ibApp.setImageResource(R.drawable.appointment_orange)
-        ibHomeC.setImageResource(R.drawable.home_orange)
+
         tvTitle.text = "Appointment"
         //btnBack.visibility = View.INVISIBLE
 
@@ -67,6 +66,7 @@ class Appointment_List: AppCompatActivity() {
         var userID:String?=null
         var patientName:String?=null
         var pPatientID:String?=null
+        val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
@@ -93,6 +93,7 @@ class Appointment_List: AppCompatActivity() {
         if (sp_role=="Doctor"||sp_role=="Assistant"){
 
             if(patientID!=null){
+                ibPatientC.setImageResource(R.drawable.patient_orange)
                 val refPatient = db.collection("Patient").document(patientID.toString())
                 refPatient.get().addOnSuccessListener {
                     if (it != null) {
@@ -114,6 +115,7 @@ class Appointment_List: AppCompatActivity() {
                     Log.d(Appointment_List.TAG, "retrieve patient failed")
                 }
             }else{
+                ibHomeC.setImageResource(R.drawable.home_orange)
                 tvPatientName.text = ""
                 btnAddAppointment.visibility = View.GONE
 //                cvAppList.setLayoutParams(RelativeLayout.LayoutParams(CardView., 500));
@@ -170,8 +172,10 @@ class Appointment_List: AppCompatActivity() {
                                                             if(app!=null){
                                                                 appList.add(app)
                                                             }
-                                                            rvAppointment.adapter = AppointmentListAdapter(appList)
-
+                                                            val result = appList.sortedByDescending {
+                                                                LocalDate.parse(it.appDate, dateFormat)
+                                                            }
+                                                            rvAppointment.adapter = AppointmentListAdapter(result)
                                                         }
                                                     }
                                                         .addOnFailureListener {
@@ -272,10 +276,10 @@ class Appointment_List: AppCompatActivity() {
                                                                                     if (app != null) {
                                                                                         appList.add(app)
                                                                                     }
-                                                                                    rvAppointment.adapter =
-                                                                                        AppointmentListAdapter(
-                                                                                            appList
-                                                                                        )
+                                                                                    val result = appList.sortedByDescending {
+                                                                                        LocalDate.parse(it.appDate, dateFormat)
+                                                                                    }
+                                                                                    rvAppointment.adapter = AppointmentListAdapter(result)
                                                                                 }
                                                                             }
                                                                             .addOnFailureListener {
@@ -352,7 +356,10 @@ class Appointment_List: AppCompatActivity() {
                                                             if(app!=null){
                                                                 appList.add(app)
                                                             }
-                                                            rvAppointment.adapter = AppointmentListAdapter(appList)
+                                                            val result = appList.sortedByDescending {
+                                                                LocalDate.parse(it.appDate, dateFormat)
+                                                            }
+                                                            rvAppointment.adapter = AppointmentListAdapter(result)
 
                                                         }
                                                     }
@@ -454,10 +461,10 @@ class Appointment_List: AppCompatActivity() {
                                                                                     if (app != null) {
                                                                                         appList.add(app)
                                                                                     }
-                                                                                    rvAppointment.adapter =
-                                                                                        AppointmentListAdapter(
-                                                                                            appList
-                                                                                        )
+                                                                                    val result = appList.sortedByDescending {
+                                                                                        LocalDate.parse(it.appDate, dateFormat)
+                                                                                    }
+                                                                                    rvAppointment.adapter = AppointmentListAdapter(result)
                                                                                 }
                                                                             }
                                                                             .addOnFailureListener {

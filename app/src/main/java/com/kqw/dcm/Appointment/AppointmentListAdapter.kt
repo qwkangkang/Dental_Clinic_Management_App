@@ -13,7 +13,7 @@ import com.kqw.dcm.Patient.PatientListAdapter
 
 
 
-class AppointmentListAdapter(private val appList: ArrayList<Appointment_Data>): RecyclerView.Adapter<AppointmentListAdapter.AppointmentViewHolder>() {
+class AppointmentListAdapter(private val appList: List<Appointment_Data>): RecyclerView.Adapter<AppointmentListAdapter.AppointmentViewHolder>() {
     companion object{
         val TAG:String = AppointmentListAdapter::class.java.simpleName
     }

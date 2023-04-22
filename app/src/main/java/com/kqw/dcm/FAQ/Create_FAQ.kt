@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -72,6 +74,8 @@ class Create_FAQ:AppCompatActivity() {
             }.addOnFailureListener {
                 Log.w(TAG, "failed retrieve faq")
             }
+        }else{
+            btnDeleteFAQ.visibility = View.INVISIBLE
         }
 
         btnLogout.setOnClickListener {
@@ -121,7 +125,9 @@ class Create_FAQ:AppCompatActivity() {
                                         .set(faqMap)
                                         .addOnSuccessListener { Log.d(TAG, "Success") }
                                         .addOnFailureListener { e -> Log.w(TAG, "Error") }
-                                    finish()
+                                    val intent = Intent(this, FAQ_List::class.java)
+                                    startActivity(intent)
+                                    overridePendingTransition(0, 0)
 
                                 }
                             }
@@ -133,6 +139,13 @@ class Create_FAQ:AppCompatActivity() {
             }
 
 
+        }
+        btnDeleteFAQ.setOnClickListener {
+            db.collection("FAQ").document(faqID.toString()).delete()
+            Toast.makeText(this, "FAQ is deleted successfully", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, FAQ_List::class.java)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
         }
 
         //menu bar button

@@ -9,10 +9,17 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.AuthFailureError
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.R
+import com.scottyab.aescrypt.AESCrypt
 import kotlinx.android.synthetic.main.create_appointment.*
 import kotlinx.android.synthetic.main.register.*
 import kotlinx.android.synthetic.main.register_doc_assistant.*
@@ -25,6 +32,8 @@ import kotlinx.android.synthetic.main.register_doc_assistant.etFName
 import kotlinx.android.synthetic.main.register_doc_assistant.etIC
 import kotlinx.android.synthetic.main.register_doc_assistant.etLName
 import kotlinx.android.synthetic.main.register_doc_assistant.etPassword
+import java.security.GeneralSecurityException
+import java.util.HashMap
 
 class Register_Clinic:AppCompatActivity() {
     companion object{
@@ -118,6 +127,14 @@ class Register_Clinic:AppCompatActivity() {
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
+                                val key = "passwordKey"
+                                var encryptedPassword:String?=null
+                                try {
+                                    encryptedPassword = AESCrypt.encrypt(key, password)
+                                } catch (e: GeneralSecurityException) {
+                                    Log.d(Register.TAG, "password encrypted failed")
+                                }
+
                                 val id = db.collection("collection_name").document().id
 
                                 val userMap = hashMapOf(
@@ -126,7 +143,7 @@ class Register_Clinic:AppCompatActivity() {
                                     "user_last_name" to lname,
                                     "user_email" to email,
                                     "user_role" to role,
-                                    "user_password" to password,
+                                    "user_password" to encryptedPassword,
                                     "user_phone" to contactNo,
                                     "user_IC_no" to IC,
                                     "user_gender" to gender
@@ -182,6 +199,7 @@ class Register_Clinic:AppCompatActivity() {
                                             )
                                         }
                                         .addOnFailureListener { e -> Log.w(Register.TAG, "Error") }
+                                    sendEmail()
                                     Toast.makeText(this, "Register Successful. Please Login First", Toast.LENGTH_SHORT).show()
                                     val intent = Intent(this, Login::class.java)
                                     startActivity(intent)
@@ -211,7 +229,7 @@ class Register_Clinic:AppCompatActivity() {
     private fun validLName():String?{
         val lname = etLName.text.toString().trim()
 
-        if(lname!!.isEmpty()){
+        if(lname.isEmpty()){
             return "Last Name Required"
         }
         return null
@@ -220,7 +238,7 @@ class Register_Clinic:AppCompatActivity() {
     private fun validEmail():String?{
         val email = etEmail.text.toString().trim()
 
-        if(email!!.isEmpty()){
+        if(email.isEmpty()){
             return "Email Required"
         }
         if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -232,13 +250,13 @@ class Register_Clinic:AppCompatActivity() {
     private fun validContactNo():String?{
         val contactNo = etContact.text.toString().trim()
 
-        if(contactNo!!.isEmpty()){
+        if(contactNo.isEmpty()){
             return "Contact No. Required"
         }
-        if(!contactNo!!.matches(".*[0-9].*".toRegex())){
+        if(!contactNo.matches(".*[0-9].*".toRegex())){
             return "Must Be Digits"
         }
-        if((contactNo!!.length) != 10 && (contactNo!!.length) != 11){
+        if((contactNo.length) != 10 && (contactNo.length) != 11){
             return "Must Be 10 or 11 Digits"
         }
         return null
@@ -247,10 +265,10 @@ class Register_Clinic:AppCompatActivity() {
     private fun validIC():String?{
         val IC = etIC.text.toString().trim()
 
-        if(IC!!.isEmpty()){
+        if(IC.isEmpty()){
             return "IC No. Required"
         }
-        if(!IC!!.matches(".*[0-9]{6}-[0-9]{2}-[0-9]{4}.*".toRegex())||IC!!.length!=14){
+        if(!IC.matches(".*[0-9]{6}-[0-9]{2}-[0-9]{4}.*".toRegex())||IC.length!=14){
             return "Invalid IC No. Format"
         }
         return null
@@ -259,19 +277,19 @@ class Register_Clinic:AppCompatActivity() {
     private fun validPassword():String?{
         val password = etPassword.text.toString().trim()
 
-        if(password!!.isEmpty()){
+        if(password.isEmpty()){
             return "Password Required"
         }
-        if(password!!.length<8){
+        if(password.length<8){
             return "Minimum 8 Character Password"
         }
-        if(!password!!.matches(".*[A-Z].*".toRegex())){
+        if(!password.matches(".*[A-Z].*".toRegex())){
             return "Must Contain 1 Upper-case Character"
         }
-        if(!password!!.matches(".*[a-z].*".toRegex())){
+        if(!password.matches(".*[a-z].*".toRegex())){
             return "Must Contain 1 Lower-case Character"
         }
-        if(!password!!.matches(".*[@#\$%^&+=].*".toRegex())) {
+        if(!password.matches(".*[@#\$%^&+=].*".toRegex())) {
             return "Must Contain 1 Special Character (@#\$%^&+=)"
         }
         return null
@@ -281,7 +299,7 @@ class Register_Clinic:AppCompatActivity() {
         val confirmPassword = etCPassword.text.toString().trim()
         val password = etPassword.text.toString().trim()
 
-        if(confirmPassword!!.isEmpty()){
+        if(confirmPassword.isEmpty()){
             return "Confirm Password Required"
         }
         if(confirmPassword!=password){
@@ -293,9 +311,45 @@ class Register_Clinic:AppCompatActivity() {
     private fun validSpecialist():String?{
         val specialist = ddlSpecialist.text.toString().trim()
 
-        if(specialist!!.isEmpty()){
+        if(specialist.isEmpty()){
             return "Please Choose A Specialist"
         }
         return null
+    }
+
+    private fun sendEmail() {
+        val requestQueue : RequestQueue = Volley.newRequestQueue(applicationContext)
+
+        val stringRequest: StringRequest =  object: StringRequest(
+            Method.POST, "https://infinityqw.000webhostapp.com/SendEmailRegister.php",
+            Response.Listener{ response->
+                Toast.makeText(this, ""+response, Toast.LENGTH_SHORT).show()
+                Log.d(Reset_Pw.TAG, response)
+            },
+            Response.ErrorListener{ error ->
+                Toast.makeText(this, ""+error, Toast.LENGTH_SHORT).show()
+                Log.d(Reset_Pw.TAG, error.toString())
+            })
+        {
+            override fun getParams(): Map<String, String> {
+                val params: MutableMap<String, String> = HashMap()
+                params["email"] = etEmail.text.toString()
+                params["fname"] = etFName.text.toString()
+                return params
+            }
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                val params: MutableMap<String, String> = HashMap()
+                params["Content-Type"] = "application/x-www-form-urlencoded"
+                return params
+            }
+        }
+        stringRequest.retryPolicy = DefaultRetryPolicy(
+            10000,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+
+        requestQueue.add(stringRequest)
     }
 }

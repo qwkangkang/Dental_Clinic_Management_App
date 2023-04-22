@@ -16,28 +16,24 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kqw.dcm.AccountSetting.Account_Setting
+import com.kqw.dcm.AccountSetting.Account_Setting_Clinic
 import com.kqw.dcm.AccountSetting.Login
 import com.kqw.dcm.Consultation.Consultation_List
-import com.kqw.dcm.Home.MainActivity
 import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.R
 import kotlinx.android.synthetic.main.menu_bar_clinic.*
 import kotlinx.android.synthetic.main.patient_list.*
-import kotlinx.android.synthetic.main.schedule.*
 import kotlinx.android.synthetic.main.title_bar.*
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.math.log
 
 class Patient_List: AppCompatActivity() {
     companion object{
         val TAG:String = Patient_List::class.java.simpleName
     }
 
-    //private lateinit var recyclerView: RecyclerView
+
     private lateinit var patientList: ArrayList<Patient_Data>
     private var db = Firebase.firestore
     private var sPatientID: String? = null
@@ -232,7 +228,7 @@ class Patient_List: AppCompatActivity() {
         }
 
         ibProfileC.setOnClickListener {
-            val intent = Intent(this, Account_Setting::class.java)
+            val intent = Intent(this, Account_Setting_Clinic::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
         }

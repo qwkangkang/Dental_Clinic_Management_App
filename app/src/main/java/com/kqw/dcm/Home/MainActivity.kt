@@ -8,9 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.View
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.annotation.RequiresApi
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kqw.dcm.AccountSetting.Account_Setting
@@ -18,8 +19,9 @@ import com.kqw.dcm.Appointment.Appointment_List
 import com.kqw.dcm.Consultation.Consultation_List
 import com.kqw.dcm.FAQ.FAQ_List
 import com.kqw.dcm.AccountSetting.Login
+import com.kqw.dcm.Appointment.Appointment_Data
 import com.kqw.dcm.R
-import com.kqw.dcm.schedule.Schedule
+import com.kqw.dcm.TreatmentHistory.Treatment_Data
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
 import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.activity_main.*
@@ -27,7 +29,9 @@ import kotlinx.android.synthetic.main.activity_main.cvAppointment
 import kotlinx.android.synthetic.main.activity_main.cvFAQ
 import kotlinx.android.synthetic.main.activity_main.ibLogout
 import kotlinx.android.synthetic.main.activity_main_clinic.*
+import kotlinx.android.synthetic.main.appointment_list.*
 import kotlinx.android.synthetic.main.menu_bar.*
+import kotlinx.android.synthetic.main.treatment_history_list.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -46,17 +50,28 @@ class MainActivity : AppCompatActivity() {
     var ROLE_KEY = "role"
     var sp_uid = ""
     var sp_role = ""
+    private lateinit var appList: ArrayList<Appointment_Data>
+    private lateinit var treatmentList: ArrayList<Treatment_Data>
+    var today: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
+    @RequiresApi(Build.VERSION_CODES.O)
+    var ldToday: LocalDate = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalDate()
+    @RequiresApi(Build.VERSION_CODES.O)
+    val ltNow: LocalTime = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalTime()
 
     @RequiresApi(Build.VERSION_CODES.O)
     val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     @RequiresApi(Build.VERSION_CODES.O)
-    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
+    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ibHome.setImageResource(R.drawable.home_orange)
+
+        //init
+        tvViewMore.visibility = View.INVISIBLE
+        tvViewMore2.visibility = View.INVISIBLE
 
         //variables
         var patientID:String?=null
@@ -87,6 +102,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
         refreshQueueNo()
+        refreshLastApp()
+        refreshLastTreatment()
 
         //buttons to next activities
         ibLogout.setOnClickListener {
@@ -179,6 +196,8 @@ class MainActivity : AppCompatActivity() {
 //                Toast.LENGTH_SHORT
 //            ).show()
             refreshQueueNo()
+            refreshLastApp()
+            refreshLastTreatment()
 
 
         }.also { runnable = it }, delay)
@@ -187,10 +206,6 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun refreshQueueNo() {
-        var today: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
-        var ldToday: LocalDate = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalDate()
-        Log.d(MainActivity_Clinic.TAG, "today is "+ldToday)
-        val ltNow: LocalTime = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalTime()
 
         var queueNo:Int=0
         db.collection("Check In").get()
@@ -219,6 +234,255 @@ class MainActivity : AppCompatActivity() {
                     tvQueueNo.text = queueNo.toString()
                 }
             }.addOnFailureListener { Log.d(MainActivity_Clinic.TAG, "failed retrieve checkin") }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun refreshLastApp(){
+        var pPatientID:String?=null
+        appList = arrayListOf()
+        val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        db = FirebaseFirestore.getInstance()
+        db.collection("Patient").get()
+            .addOnSuccessListener {
+                if (!it.isEmpty) {
+                    for (patient in it.documents) {
+                        val pUserID = patient.get("user_ID").toString()
+                        if (pUserID == sp_uid) {
+                            pPatientID = patient.get("patient_ID").toString()
+                            db.collection("Appointment").get()
+                                .addOnSuccessListener {
+                                    if (!it.isEmpty) {
+                                        for (appointment in it.documents) {
+                                            val aPatientID =
+                                                appointment.get("patient_ID").toString()
+                                            if (aPatientID == pPatientID) {
+
+                                                val appID =
+                                                    appointment.get("appointment_ID").toString()
+                                                val service =
+                                                    appointment.get("appointment_service")
+                                                        .toString()
+                                                val appDate =
+                                                    appointment.get("appointment_date")
+                                                        .toString()
+                                                val appStartTime =
+                                                    appointment.get("appointment_start_time")
+                                                        .toString()
+                                                val status =
+                                                    appointment.get("appointment_status")
+                                                        .toString()
+                                                val room =
+                                                    appointment.get("room_ID")
+                                                        .toString()
+                                                val scheduleID =
+                                                    appointment.get("schedule_ID").toString()
+                                                val cancelReason = appointment.get("appointment_cancel_reason").toString()
+                                                val refSchedule = db.collection("Schedule")
+                                                    .document(scheduleID)
+                                                refSchedule.get().addOnSuccessListener {
+                                                    if (it != null) {
+                                                        val doctorID =
+                                                            it.data?.get("doctor_ID").toString()
+                                                        val refDoc = db.collection("Doctor")
+                                                            .document(doctorID)
+                                                        refDoc.get().addOnSuccessListener {
+                                                            if (it != null) {
+                                                                val userID = it.data?.get("user_ID")
+                                                                    .toString()
+                                                                val refUser =
+                                                                    db.collection("User")
+                                                                        .document(userID!!)
+                                                                refUser.get()
+                                                                    .addOnSuccessListener {
+                                                                        if (it != null) {
+                                                                            val doctorName =
+                                                                                it.data?.get("user_first_name")
+                                                                                    .toString() + " " + it.data?.get(
+                                                                                    "user_last_name"
+                                                                                ).toString()
+                                                                            val app =
+                                                                                Appointment_Data(
+                                                                                    appID,
+                                                                                    aPatientID,
+                                                                                    doctorName,
+                                                                                    service,
+                                                                                    appDate,
+                                                                                    appStartTime,
+                                                                                    status,
+                                                                                    room,
+                                                                                    cancelReason
+                                                                                )
+                                                                            if (app != null) {
+                                                                                appList.add(app)
+                                                                            }
+                                                                            val result = appList.sortedByDescending {
+                                                                                LocalDate.parse(it.appDate, dateFormat)
+                                                                            }
+
+                                                                            val ldAppDate = LocalDate.parse(result[0].appDate, dateFormat)
+                                                                            val ltAppTime = LocalTime.parse(result[0].appStartTime, timeFormat)
+                                                                            if(ldAppDate.compareTo(ldToday)>=0){
+
+                                                                                if(ldAppDate.compareTo(ldToday)==0&&ltAppTime.compareTo(ltNow)<0){
+                                                                                    tvAppDetailP.text = "There Is No Upcoming Appointment"
+                                                                                    tvViewMore2.visibility = View.INVISIBLE
+                                                                                }else{
+                                                                                    tvAppDetailP.text = "Dr. "+result[0].docName+"\n"+result[0].appDate+
+                                                                                            "  "+result[0].appStartTime
+                                                                                    tvViewMore2.visibility = View.VISIBLE
+                                                                                }
+                                                                            }else{
+                                                                                tvAppDetailP.text = "There Is No Upcoming Appointment"
+                                                                                tvViewMore2.visibility = View.INVISIBLE
+                                                                            }
+
+                                                                        }
+                                                                    }
+                                                                    .addOnFailureListener {
+                                                                        Log.d(
+                                                                            Appointment_List.TAG,
+                                                                            "retrieve user failed"
+                                                                        )
+                                                                    }
+                                                            }
+                                                        }
+                                                            .addOnFailureListener {
+                                                                Log.d(
+                                                                    Appointment_List.TAG,
+                                                                    "retrieve doctor failed"
+                                                                )
+                                                            }
+                                                    }
+                                                }
+                                                    .addOnFailureListener {
+                                                        Log.d(
+                                                            Appointment_List.TAG,
+                                                            "retrieve schedule failed"
+                                                        )
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    Log.d(Appointment_List.TAG, "retrieve appointment failed")
+                                }
+
+                        }
+                    }
+                }
+            }.addOnFailureListener { Log.d(Appointment_List.TAG, "failed retrieve user") }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun refreshLastTreatment(){
+        treatmentList = arrayListOf()
+        db = FirebaseFirestore.getInstance()
+        var userID:String?=null
+        db.collection("Patient").get()
+            .addOnSuccessListener {
+                if (!it.isEmpty) {
+                    for (patient in it.documents) {
+                        val pUserID = patient.get("user_ID").toString()
+                        if (pUserID == sp_uid) {
+                            val pPatient_ID = patient.get("patient_ID").toString()
+                            db.collection("Treatment").get()
+                                .addOnSuccessListener {
+                                    if (!it.isEmpty) {
+                                        for (treatment in it.documents) {
+                                            val tPatientID =
+                                                treatment.get("patient_ID").toString()
+                                            if (tPatientID == pPatient_ID) {
+                                                val treatmentID =
+                                                    treatment.get("treatment_ID").toString()
+                                                val treatmentName =
+                                                    treatment.get("treatment_name").toString()
+                                                val treatmentDate =
+                                                    treatment.get("treatment_date").toString()
+                                                val treatmentTime =
+                                                    treatment.get("treatment_time").toString()
+                                                val treatmentDocID =
+                                                    treatment.get("doctor_ID").toString()
+//                                                val treatmentPatientID =
+//                                                    treatment.get("patient_ID").toString()
+                                                val treatmentRemark =
+                                                    treatment.get("treatment_remark").toString()
+                                                val treatmentPres =
+                                                    treatment.get("treatment_prescription")
+                                                        .toString()
+                                                val treatmentDetail =
+                                                    treatment.get("treatment_detail").toString()
+
+                                                val refDoc = db.collection("Doctor")
+                                                    .document(treatmentDocID)
+                                                refDoc.get().addOnSuccessListener {
+                                                    if (it != null) {
+                                                        userID =
+                                                            it.data?.get("user_ID").toString()
+                                                        val refUser = db.collection("User")
+                                                            .document(userID!!)
+                                                        refUser.get().addOnSuccessListener {
+                                                            if (it != null) {
+                                                                val doctorName =
+                                                                    it.data?.get("user_first_name")
+                                                                        .toString() + " " + it.data?.get(
+                                                                        "user_last_name"
+                                                                    )
+                                                                        .toString()
+                                                                val treatment = Treatment_Data(
+                                                                    treatmentID,
+                                                                    //patientID.toString(),
+                                                                    tPatientID,
+                                                                    doctorName,
+                                                                    treatmentName,
+                                                                    treatmentDate,
+                                                                    treatmentTime,
+                                                                    treatmentRemark,
+                                                                    treatmentPres,
+                                                                    treatmentDetail
+                                                                )
+
+                                                                if (treatment != null) {
+                                                                    treatmentList.add(treatment)
+                                                                }
+                                                                val result = treatmentList.sortedByDescending {
+                                                                    LocalDate.parse(it.treatmentDate, dateFormat)
+                                                                }
+                                                                if(result!=null){
+                                                                    tvTreatmentDetail.text = result[0].treatmentDate+"\t\t\t\t"+result[0].treatmentName
+                                                                    tvViewMore.visibility = View.VISIBLE
+                                                                }else{
+                                                                    tvTreatmentDetail.text = "There Is No Treatment History"
+                                                                    tvViewMore.visibility = View.INVISIBLE
+                                                                }
+
+                                                            }
+                                                        }.addOnFailureListener {
+                                                            Log.d(
+                                                                Treatment_History_List.TAG,
+                                                                "failed retrieve user"
+                                                            )
+                                                        }
+                                                    }
+                                                }.addOnFailureListener {
+                                                    Log.d(
+                                                        Treatment_History_List.TAG,
+                                                        "failed retrieve doctor"
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }.addOnFailureListener {
+                                    Log.d(
+                                        Treatment_History_List.TAG,
+                                        "failed retrieve treatment"
+                                    )
+                                }
+                        }
+                    }
+                }
+            }.addOnFailureListener { Log.d(Treatment_History_List.TAG, "failed retrieve patient") }
     }
 
     override fun onPause() {

@@ -63,7 +63,7 @@ class Create_Appointment:AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     @RequiresApi(Build.VERSION_CODES.O)
-    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
+    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -75,6 +75,7 @@ class Create_Appointment:AppCompatActivity() {
         //init setting
         tvTitle.text = "Appointment"
         ibApp.setImageResource(R.drawable.appointment_orange)
+        ibPatientC.setImageResource(R.drawable.patient_orange)
 
 
         //variables
@@ -84,12 +85,20 @@ class Create_Appointment:AppCompatActivity() {
         sharedPreferences = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
         sp_uid = sharedPreferences.getString(USERID_KEY, null)!!
         sp_role = sharedPreferences.getString(ROLE_KEY, null)!!
-        val c = Calendar.getInstance()
+        val c = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
         val year = c.get(Calendar.YEAR)
         val month = c.get(Calendar.MONTH)
         val day = c.get(Calendar.DAY_OF_MONTH)
-        val today = LocalDateTime.now().format(dateFormat)
-        etAppDate.setText(today)
+//        val today = LocalDateTime.now().format(dateFormat)
+        var today: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
+        var ldToday: LocalDate = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalDate()
+        Log.d(MainActivity_Clinic.TAG, "today is "+ldToday)
+        val ltNow:LocalTime = LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId()).toLocalTime()
+        val strToday = ldToday.format(dateFormat)
+      //  val strNow = ltNow.format(timeFormat)
+
+
+        etAppDate.setText(strToday)
         var doctorNameList: ArrayList<String>
         var roomIDList: ArrayList<String>
         var timeItems = listOf("08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
@@ -105,12 +114,10 @@ class Create_Appointment:AppCompatActivity() {
         var selectedDate:LocalDate?=null
         var appStartTime:LocalTime?=null
         var selectedService:String?=null
-        var duration:Int?=null
         var appEndTime:LocalTime?=null
         var selectedDoc:String?=null
         var selectedRoom:String?=null
         var selectedDoctorID:String?=null
-        var btnCreateClick:Boolean
         var avai:Boolean
 
         if(sp_role=="Doctor"||sp_role=="Assistant"){
@@ -213,17 +220,6 @@ class Create_Appointment:AppCompatActivity() {
             .addOnFailureListener {
                 Log.d(Appointment_List.TAG, "failed retrieve user")
             }
-
-
-
-//        if(btnCreate.isPressed){
-//            if(avai==false){
-//                Toast.makeText(this, "Failed Making Appointment. Please Check Schedule", Toast.LENGTH_SHORT).show()
-//                Log.d(TAG, avai.toString())
-//            }
-//        }
-
-
 
 
         btnBack.setOnClickListener {
@@ -350,7 +346,9 @@ class Create_Appointment:AppCompatActivity() {
                                                                                                     createAppointment(etAppDate.text.toString(), appStartTime?.format(timeFormat),
                                                                                                         appEndTime?.format(timeFormat), selectedRoom, patientID, scheduleID, selectedService)
                                                                                                     updateSchedule(scheduleID, availableStartTime, availableEndTime, appStartTime, appEndTime, sStrScheduleDate, sDoctorID)
-                                                                                                    setNotification(selectedDate)
+                                                                                                    if(sp_role=="Patient"){
+                                                                                                        setNotification(selectedDate)
+                                                                                                    }
                                                                                                     //end test
                                                                                                     avai = true
                                                                                                    // tilBtnCreate.helperText = ""
@@ -494,8 +492,7 @@ class Create_Appointment:AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setNotification(selectedDate: LocalDate?) {
-//        Log.d(TAG, "building notification")
-//        val notifyMe: NotifyMe.Builder = NotifyMe.Builder(applicationContext)
+
         var timer: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
         val year:Int = selectedDate!!.year
         val month:Int = selectedDate!!.monthValue
@@ -504,11 +501,9 @@ class Create_Appointment:AppCompatActivity() {
         timer.set(Calendar.MONTH, month)
         timer.set(Calendar.DAY_OF_MONTH, day-3)
         timer.set(Calendar.HOUR_OF_DAY, 0)
-//        timer.set(Calendar.HOUR,9)
-//        timer.set(Calendar.AM_PM, Calendar.PM)
         timer.set(Calendar.MINUTE, 0)
         timer.set(Calendar.SECOND, 0)
-        Log.d(TAG, "timer: "+timer.toString())
+
 
         //three day before
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -522,6 +517,13 @@ class Create_Appointment:AppCompatActivity() {
         val intent2 = Intent(this, AppAlarm::class.java)
         val pendingIntent2 = PendingIntent.getBroadcast(this, 0, intent2, PendingIntent.FLAG_IMMUTABLE )
         alarmManager2.setExact(AlarmManager.RTC_WAKEUP, timer.timeInMillis, pendingIntent2)
+
+        //demo purpose
+        var timerDemo: Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"))
+        val alarmManager0 = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent0 = Intent(this, AppAlarm::class.java)
+        val pendingIntent0 = PendingIntent.getBroadcast(this, 0, intent0, PendingIntent.FLAG_IMMUTABLE )
+        alarmManager0.setExact(AlarmManager.RTC_WAKEUP, timerDemo.timeInMillis, pendingIntent0)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

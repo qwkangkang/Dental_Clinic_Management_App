@@ -22,7 +22,6 @@ import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.R
 import com.kqw.dcm.TreatmentHistory.Treatment_History_List
-import com.kqw.dcm.schedule.Schedule
 import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.consultation_list.*
 import kotlinx.android.synthetic.main.consultation_reply.*
@@ -32,6 +31,7 @@ import kotlinx.android.synthetic.main.menu_bar.*
 import kotlinx.android.synthetic.main.menu_bar_clinic.*
 import kotlinx.android.synthetic.main.title_bar.*
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class Consultation_Reply : AppCompatActivity() {
     companion object {
@@ -63,6 +63,11 @@ class Consultation_Reply : AppCompatActivity() {
             mnPatientConR.visibility = View.INVISIBLE
         } else {
             mnClinicConR.visibility = View.INVISIBLE
+            tvPatientName.visibility = View.INVISIBLE
+        }
+        if(sp_role=="Assistant"){
+            btnSolved.visibility = View.INVISIBLE
+            tvSolved.visibility = View.INVISIBLE
         }
 
         //variable
@@ -168,7 +173,7 @@ class Consultation_Reply : AppCompatActivity() {
         tvConDateTime.setOnClickListener{
             val date = FieldValue.serverTimestamp()
             val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-            val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
+            val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
 
             Log.d(TAG, "test date=>"+date.toString())
         }

@@ -24,11 +24,8 @@ import com.kqw.dcm.Appointment.Create_Appointment
 import com.kqw.dcm.Home.MainActivity_Clinic
 import com.kqw.dcm.Patient.Patient_List
 import com.kqw.dcm.R
-import com.kqw.dcm.schedule.Schedule
 import com.kqw.dcm.schedule.Schedule_List
 import kotlinx.android.synthetic.main.appointment_list.*
-import kotlinx.android.synthetic.main.appointment_list.mnClinic
-import kotlinx.android.synthetic.main.appointment_list.mnPatient
 import kotlinx.android.synthetic.main.consultation_reply.*
 import kotlinx.android.synthetic.main.create_appointment.*
 import kotlinx.android.synthetic.main.menu_bar.*
@@ -78,7 +75,7 @@ class ViewNCreate_Treatment_History: AppCompatActivity() {
         val month = c.get(Calendar.MONTH)
         val day = c.get(Calendar.DAY_OF_MONTH)
         val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
+        val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
         val today = LocalDateTime.now().format(dateFormat)
         etTreatmentDate.setText(today)
         var doctorNameList: ArrayList<String>
@@ -109,14 +106,7 @@ class ViewNCreate_Treatment_History: AppCompatActivity() {
         else{
             mnClinicTreatVC.visibility = View.INVISIBLE
             btnSaveTreatment.visibility = View.INVISIBLE
-//            etTreatmentDate.isClickable = false
-//            ddlTreatTime.isClickable = false
-//            etTreatmentDate.isClickable = false
-//            ddlDocInChargeTreat.isClickable = false
-//            etRemark.isClickable = false
-//            etPrescription.isClickable = false
-//            etTreatmentDetail.isClickable = false
-
+            tvPatientName.visibility = View.INVISIBLE
         }
 
         val bundle: Bundle? = intent.extras
@@ -145,7 +135,7 @@ class ViewNCreate_Treatment_History: AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
 
         if(action=="viewNEdit"){
-            if(sp_role=="Patient"){
+            if(sp_role=="Patient"||sp_role=="Assistant"){
                 btnSaveTreatment.visibility = View.GONE
                 etTreatmentDate.isEnabled = false
                 ddlTreatTime.isEnabled = false
@@ -157,28 +147,32 @@ class ViewNCreate_Treatment_History: AppCompatActivity() {
 
                 ddlTreatTime.setAdapter(null)
                 ddlDocInChargeTreat.setAdapter(null)
+
             }
             btnSaveTreatment.text = "Update"
 
-            val refPatient = db.collection("Patient").document(bunPatientID.toString())
-            refPatient.get().addOnSuccessListener {
-                if (it != null) {
-                    userID = it.data?.get("user_ID").toString()
-                    val refUser = db.collection("User").document(userID.toString())
-                    refUser.get().addOnSuccessListener {
-                        if (it != null) {
-                            patientName = it.data?.get("user_first_name")
-                                .toString() + " " + it.data?.get("user_last_name").toString()
-                            tvPatientName.text = patientName
+
+
+                val refPatient = db.collection("Patient").document(bunPatientID.toString())
+                refPatient.get().addOnSuccessListener {
+                    if (it != null) {
+                        userID = it.data?.get("user_ID").toString()
+                        val refUser = db.collection("User").document(userID.toString())
+                        refUser.get().addOnSuccessListener {
+                            if (it != null) {
+                                patientName = it.data?.get("user_first_name")
+                                    .toString() + " " + it.data?.get("user_last_name").toString()
+                                tvPatientName.text = patientName
+                            }
                         }
+                            .addOnFailureListener {
+                                Log.d(TAG, "retrieve user failed")
+                            }
                     }
-                        .addOnFailureListener {
-                            Log.d(TAG, "retrieve user failed")
-                        }
+                }.addOnFailureListener {
+                    Log.d(TAG, "retrieve patient failed")
                 }
-            }.addOnFailureListener {
-                Log.d(TAG, "retrieve patient failed")
-            }
+
 
             etTreatmentDate.setText(bunTreatmentDate)
             //ddlTreatTime.setText(bunTreatmentTime)
@@ -197,6 +191,7 @@ class ViewNCreate_Treatment_History: AppCompatActivity() {
 //            ddlTreatTime.setAdapter(adapterTimeItems)
 
         }else{
+            Log.d(TAG, "patient id is2 "+patientID)
             val refPatient = db.collection("Patient").document(patientID.toString())
             refPatient.get().addOnSuccessListener {
                 if (it != null) {
@@ -228,8 +223,15 @@ class ViewNCreate_Treatment_History: AppCompatActivity() {
                         if(role=="Doctor"){
                             val doctorName = user.data?.get("user_first_name").toString()+" "+user.data?.get("user_last_name").toString()
                             doctorNameList.add("Dr "+doctorName)
+                            if(doctorNameList!=null&&doctorNameList.size>0){
+                                Log.d(Create_Appointment.TAG, "not null n >0")
+                            }
+                            if(doctorNameList!=null&&doctorNameList.size>0){
+                                val firstDoc = doctorNameList[0]
+                                Log.d(Create_Appointment.TAG, firstDoc)
+                                ddlDocInChargeTreat.setText(firstDoc,false)
+                            }
                         }
-
                     }
                 }
             }
