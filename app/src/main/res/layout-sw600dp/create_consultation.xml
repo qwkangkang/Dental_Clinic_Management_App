@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#EEF0F4"
+    tools:ignore="MissingDefaultResource">
+
+    <include layout="@layout/title_bar"/>
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00000000"
+        app:cardElevation="0dp"
+        android:paddingHorizontal="30dp"
+        android:layout_marginHorizontal="300dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="120dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/EnterQues"
+            android:text="Enter your question here"
+            android:textSize="18sp"/>
+        <EditText
+            android:id="@+id/etConsultQues"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:lines="5"
+            android:background="@drawable/text_multiple_line_background"
+            android:layout_margin="5dp"
+            android:padding="5dp"
+            android:gravity="left"
+            android:textSize="20sp"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSubmit"
+            android:backgroundTint="#7E83AA"
+            android:text="Submit"
+            android:layout_marginHorizontal="100dp"
+            android:textAllCaps="false"
+            android:layout_marginTop="30dp"
+            android:elevation="5dp"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    <include layout="@layout/menu_bar"/>
+</RelativeLayout>

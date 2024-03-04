@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#EEF0F4">
+
+    <include layout="@layout/title_bar"/>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvCreateAppointment"
+        android:layout_width="match_parent"
+        android:layout_height="600dp"
+        android:padding="10dp"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="#E7EBF2"
+        app:cardCornerRadius="8dp"
+        android:elevation="10dp"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="50dp">
+
+        <ImageView
+            android:id="@+id/ivQRCode"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:src="@drawable/textbox_background"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:id="@+id/tvQRCodeHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="Please Show QR Code At Counter \nTo Check In"
+            android:layout_marginTop="80dp"
+            android:textSize="20sp"/>
+
+    </androidx.cardview.widget.CardView>
+    <include android:id="@+id/mnPatientQRCode" layout="@layout/menu_bar"/>
+</RelativeLayout>

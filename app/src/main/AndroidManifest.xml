@@ -39,7 +39,6 @@
         <activity android:name=".AccountSetting.Account_Setting"/>
         <activity android:name=".FAQ.FAQ_List"/>
         <activity android:name=".Appointment.Create_Appointment"/>
-        <activity android:name=".schedule.Schedule"/>
         <activity android:name=".schedule.Edit_Schedule"/>
         <activity android:name=".Consultation.Consultation_List"/>
         <activity android:name=".Consultation.Consultation_Reply"/>
@@ -49,7 +48,6 @@
         <activity android:name=".AccountSetting.Reset_Pw"/>
         <activity android:name=".AccountSetting.Email_Verification"/>
         <activity android:name=".AccountSetting.Change_Pw"/>
-
         <activity android:name=".Home.MainActivity_Clinic"/>
         <activity android:name=".Patient.Patient_List"/>
         <activity android:name=".Patient.Patient"/>

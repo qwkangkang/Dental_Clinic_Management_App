@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#EEF0F4"
+    tools:context=".AccountSetting.Login">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_centerInParent="true"
+        android:backgroundTint="#E7EBF2"
+        app:cardCornerRadius="8dp"
+        android:elevation="10dp"
+        android:layout_marginHorizontal="50dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="500dp"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:text="Dental Clinic Management System"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="40sp" />
+
+
+            <TextView
+                android:id="@+id/tvEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:padding="5dp"
+                android:text="Email"
+                android:textColor="@color/black"
+                android:textSize="20sp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColorHint="#B9B8B8"
+                app:helperTextTextColor="#FF5722"
+                android:id="@+id/tilEmail">
+                <EditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/textbox_background"
+                    android:ems="10"
+                    android:inputType="textEmailAddress"
+                    android:padding="5dp"
+                    android:textSize="20sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <TextView
+                android:id="@+id/tvPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:padding="5dp"
+                android:text="Password"
+                android:textColor="@color/black"
+                android:textSize="20sp"/>
+
+
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColorHint="#B9B8B8"
+                    app:helperTextTextColor="#FF5722"
+                    app:passwordToggleEnabled="true"
+                    android:id="@+id/tilPassword">
+                    <EditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="@drawable/textbox_background"
+                        android:ems="10"
+                        android:inputType="textPassword"
+                        android:minWidth="220dp"
+                        android:padding="5dp"
+                        android:textSize="20sp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+            <TextView
+                android:id="@+id/tvForgotPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Forgot Password"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:layout_marginTop="15dp"/>
+
+            <TextView
+                android:id="@+id/tvSignUp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Click Here for Sign Up"
+                android:textColor="@color/black"
+                android:textSize="20sp"/>
+
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="#7E83AA"
+                android:elevation="10dp"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="Login"
+                android:textSize="20sp"
+                android:textAllCaps="false"/>
+
+        </LinearLayout>
+
+
+    </androidx.cardview.widget.CardView>
+</RelativeLayout>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Appointment.PopUpFragment">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvCancelApp"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="20dp"
+        android:layout_height="wrap_content"
+        app:cardElevation="0dp"
+        android:backgroundTint="#FEFEFE"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="10dp">
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Failed Adding Schedule"
+                android:textColor="@color/black"
+                android:textSize="20sp"/>
+
+            <TextView
+                android:id="@+id/tvDeleteScheduleContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="There is an existing schedule with crashed time.\n
+Do you want to delete it?"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"/>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnDeleteSchedule"
+                    android:backgroundTint="#7E83AA"
+                    android:text="Delete"
+                    android:layout_marginHorizontal="30dp"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"/>
+                <Button
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnCancelDelete"
+                    android:backgroundTint="#40465F"
+                    android:text="Cancel"
+                    android:layout_marginHorizontal="30dp"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</FrameLayout>

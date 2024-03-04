@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#EEF0F4">
+    <include layout="@layout/title_bar"/>
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:backgroundTint="#00000000"
+        app:cardElevation="0dp"
+        android:paddingHorizontal="30dp"
+        android:layout_marginHorizontal="300dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="120dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvConDateTime"
+                android:text="31 May 2022  5:30pm"
+                android:gravity="end"
+                android:textSize="18sp"/>
+            <EditText
+                android:id="@+id/etConQues"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:text="After extraction, can i eat hotpot?"
+                android:background="@drawable/text_multiple_line_background"
+                android:layout_margin="5dp"
+                android:enabled="false"
+                android:textColor="@color/black"
+                android:padding="5dp"
+                android:textSize="20sp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvAnswerFrmDoc"
+                android:text="Answer from doctor"
+                android:layout_marginTop="5dp"
+                android:textSize="18sp"/>
+            <EditText
+                android:id="@+id/etConReply"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:text=""
+                android:background="@drawable/text_green_background"
+                android:layout_margin="5dp"
+                android:enabled="false"
+                android:textColor="@color/black"
+                android:padding="5dp"
+                android:textSize="20sp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvSolved"
+                android:text="Is your question solved?"
+                android:layout_marginTop="30dp"
+                android:gravity="center"
+                android:textSize="18sp"/>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnSolved"
+                android:backgroundTint="#7E83AA"
+                android:text="Solved"
+                android:layout_marginHorizontal="100dp"
+                android:textAllCaps="false"
+                android:layout_marginTop="0dp"
+                android:elevation="5dp"
+                android:textSize="20sp"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    <include android:id="@+id/mnPatientConR" layout="@layout/menu_bar"/>
+    <include android:id="@+id/mnClinicConR" layout="@layout/menu_bar_clinic"/>
+</RelativeLayout>
